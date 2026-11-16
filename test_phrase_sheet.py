@@ -1,4 +1,4 @@
-"""Julius's 250-phrase test sheet (testing/test_phrases.csv) as a regression test.
+"""250-phrase test sheet (testing/test_phrases.csv) as a regression test.
 
 Text mode only: each phrase goes straight to the detector. Every row must
 PASS, except rows the sheet marks ambiguous (REVIEW) and delivery-condition

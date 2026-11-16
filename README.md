@@ -36,8 +36,12 @@ The detector turns what was said into a KJV reference and checks that the refere
 | "John 3:16, sorry, John 4:24" | John 4:24 |
 | "next verse" / "verse seventeen" / "read it again" (each said right after John 3:16) | John 3:17 / John 3:17 / John 3:16 |
 | "The Lord's Prayer" | Matthew 6:9–13 |
+| "For God so loved the world, that he gave his only begotten Son" (no reference said) | John 3:16 |
+| "I can do all things through Christ who strengthens me" | Philippians 4:13 |
 
 Ordinary speech is ignored: "Mark my words, I'll be there at two thirty" and "we have three services on Sunday" show nothing. References that don't exist, such as "Psalm 151", are rejected.
+
+**Quotes without a reference.** When the speaker quotes a verse instead of citing it, VerseCast looks for it in the KJV. It accepts the King James wording or common modern wording ("you" for "thee", "who" for "which"). It only shows a verse when the words clearly belong to one verse. Stock phrases found in many verses ("and the Lord spake unto Moses") are ignored, and so is reading aloud from the passage already on screen.
 
 ## How it works
 
@@ -47,7 +51,7 @@ microphone ──► browser speech recognition ──► reference detector ─
 ```
 
 - **Speech recognition:** the browser's built-in service. Words arrive while you are still speaking, so a verse can be shown before you finish the sentence. The audio is processed by Google in Chrome, Microsoft in Edge, or Apple in Safari.
-- **`scripture_refs.py`** finds references in the transcript. It handles spoken numbers, "chapter"/"verse" wording, ranges, lists, ordinals, corrections and follow-ups. It is plain Python (standard library only) and runs inside the browser through [Pyodide](https://pyodide.org).
+- **`scripture_refs.py`** finds references in the transcript. It handles spoken numbers, "chapter"/"verse" wording, ranges, lists, ordinals, corrections, follow-ups and quoted verses. It is plain Python (standard library only) and runs inside the browser through [Pyodide](https://pyodide.org).
 - **The interface** is a [Next.js](https://nextjs.org) app styled with [Tailwind CSS](https://tailwindcss.com), exported as a static site, so it needs no server.
 - **Usage counts** come from [GoatCounter](https://www.goatcounter.com) (no cookies). It counts page visits and a few events, such as starting to listen or a verse being shown. It never sends speech, transcripts or verse text. The helper is `web/lib/analytics.ts`.
 - **`kjv.sqlite`** holds the 31,102 KJV verses, built by `build_kjv_db.py` from [thiagobodruk/bible](https://github.com/thiagobodruk/bible).
@@ -112,4 +116,4 @@ netlify.toml           Netlify build settings
 1. Collect tester feedback and improve recognition
 2. Test on recorded sermons and measure false positives
 3. Offline desktop version for churches with poor internet (Windows)
-4. Recognise passages read aloud without a spoken reference
+4. Recognise passages from other translations (NIV, NKJV) when quoted

@@ -32,7 +32,6 @@ AUDIO = HERE / "audio"
 CONTEXT = "John 3:16"  # the sheet: follow-ups are said after John 3:16
 
 # Follow-up rows: what the sheet's description means after John 3:16.
-# Rows where Julius has decided differently from the sheet.
 OVERRIDES = {
     58: (["Genesis 1", "Genesis 2"], "Julius decided 'and' between chapters = separate chapters (picker)"),
 }

@@ -13,8 +13,10 @@ that might be one number), KJV.find() resolves the ambiguous numbers against the
 KJV, then matches book + numbers. Session adds memory for follow-ups
 ("next verse", "verse seventeen").
 """
+import math
 import re
 import sqlite3
+from array import array
 from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
@@ -54,7 +56,7 @@ _NUM_PHRASE = re.compile(rf"\b{_NUM_WORD}(?:[\s-]+(?:and[\s-]+)?{_NUM_WORD})*\b"
 # Spoken alternates for book names (lowercase). Canonical KJV names and
 # abbreviations from the source data are added automatically.
 EXTRA_ALIASES = {
-    # Whisper spellings of spoken names (confirmed by Julius)
+    # Whisper spellings of spoken names
     "jud": "Jude", "machu": "Matthew", "psalm of solomon": "Song of Solomon", "haggi": "Haggai",
     "psalm": "Psalms", "psalms": "Psalms", "ps": "Psalms", "psa": "Psalms",
     "song of songs": "Song of Solomon", "songs": "Song of Solomon",
@@ -349,6 +351,17 @@ class KJV:
             return [(r, 0) for r in self.find(text)]
         return [(r, len(re.findall(r"[a-z0-9]+", t[e:]))) for r, _, e in self._core(t)]
 
+    def find_quote(self, text: str):
+        """The verse quoted in `text` without a reference, or None. The word
+        index is built on first use (about a second)."""
+        if getattr(self, "_quotes", None) is None:
+            self._quotes = QuoteFinder(self.con)
+        hit = self._quotes.find(text)
+        if not hit:
+            return None
+        book, ch, v1, v2 = hit
+        return Reference(book, ch, v1, ch, v2, text.strip())
+
     def is_whole_chapter(self, ref: Reference) -> bool:
         chapters = self.books[ref.book]
         return len(chapters) > 1 and ref.verse_start == 1 and ref.verse_end == chapters[ref.chapter_end]
@@ -548,6 +561,166 @@ class KJV:
         return True
 
 
+# ---------------------------------------------------------------- quotations
+# Spoken words that should match their KJV form (speech recognition and
+# preachers often modernise: "you" for "thee", "has" for "hath").
+QUOTE_EQUIV = {
+    "thee": "you", "thou": "you", "ye": "you", "thy": "your", "thine": "your",
+    "hath": "has", "doth": "does", "saith": "says", "shalt": "shall", "wilt": "will",
+    "art": "are", "unto": "to", "upon": "on", "hast": "have", "didst": "did",
+    "which": "that", "who": "that", "whom": "that",
+}
+# Very common words: matched for the order check, but worth almost nothing.
+QUOTE_STOP = frozenset("""
+a an and are as at be but by for from has have he her him his i if in is it its
+me my not o of on or our shall she so that the their them then there these they
+this to us was we were what when which who will with you your all no do did does
+""".split())
+QUOTE_MIN_WORDS = 5       # words matched in order
+QUOTE_MIN_CONTENT = 3     # of which not in QUOTE_STOP
+QUOTE_MIN_SCORE = 13.0    # summed rarity (IDF) of the matched words
+QUOTE_SKIP_COST = 1.5     # extra score needed per word skipped
+QUOTE_MIN_RUN_SCORE = 8.5 # the same, when the words are exactly the verse's, unbroken
+QUOTE_GAP = 0.4          # cost of each word skipped inside a match
+QUOTE_SHORTLIST = 400     # verses considered per search ...
+QUOTE_ALIGN = 25          # ... of which this many are aligned word by word
+QUOTE_WINDOW = 40         # only the last N words heard are searched
+QUOTE_MARGIN = 1.25       # best verse must beat the runner-up by this factor
+
+
+def _quote_words(text: str) -> list:
+    words = re.findall(r"[a-z]+", text.lower().replace("'", ""))
+    return [QUOTE_EQUIV.get(w, w) for w in words]
+
+
+class QuoteFinder:
+    """Recognises a verse quoted without its reference ("for God so loved the
+    world, that he gave his only begotten son" -> John 3:16).
+
+    Rare words in what was heard pick candidate verses; each candidate is then
+    lined up word by word, in order. A verse is returned only when the match is
+    long, made of distinctive words, tight (few words skipped), and clearly
+    better than any other verse, so ordinary speech and stock phrases that occur
+    in many verses ("and the Lord said unto Moses") are ignored."""
+
+    def __init__(self, con):
+        self.rows = con.execute(
+            "SELECT book, chapter, verse FROM verses ORDER BY book_index, chapter, verse").fetchall()
+        texts = [t for (t,) in con.execute("SELECT text FROM verses ORDER BY book_index, chapter, verse")]
+        self.words = [tuple(_quote_words(t)) for t in texts]
+        index = {}
+        for i, ws in enumerate(self.words):
+            for w in set(ws):
+                index.setdefault(w, []).append(i)
+        n = len(self.words)
+        self.index = {w: array("H", ids) for w, ids in index.items()}
+        self.idf = {w: math.log(n / len(ids)) for w, ids in index.items()}
+
+    def _weight(self, w: str) -> float:
+        return 0.3 if w in QUOTE_STOP else self.idf.get(w, 0.0)
+
+    def _align(self, q: list, v: tuple):
+        """Best compact match of q against verse v (local alignment: each
+        matched word adds its weight, each skipped word costs QUOTE_GAP).
+        Returns (score, words, content_words, q_first, q_last, v_first, v_last)."""
+        empty = (0.0, 0, 0, -1, -1)
+        best = (0.0, 0, 0, -1, -1, -1, -1)
+        prev = [empty] * (len(v) + 1)
+        for i, qw in enumerate(q):
+            cur = [empty] * (len(v) + 1)
+            wq = self._weight(qw)
+            content = qw not in QUOTE_STOP
+            for j, vw in enumerate(v, 1):
+                d = prev[j - 1]
+                if vw == qw:
+                    cell = ((d[0] + wq, d[1] + 1, d[2] + content, d[3], d[4]) if d[0] > 0
+                            else (wq, 1, content, i, j - 1))
+                else:
+                    cell = (d[0] - 2 * QUOTE_GAP,) + d[1:]
+                up, left = prev[j], cur[j - 1]
+                if up[0] - QUOTE_GAP > cell[0]:
+                    cell = (up[0] - QUOTE_GAP,) + up[1:]
+                if left[0] - QUOTE_GAP > cell[0]:
+                    cell = (left[0] - QUOTE_GAP,) + left[1:]
+                if cell[0] <= 0:
+                    cell = empty
+                cur[j] = cell
+                if vw == qw and cell[0] > best[0]:
+                    best = (cell[0], cell[1], cell[2], cell[3], i, cell[4], j - 1)
+            prev = cur
+        return best
+
+    @staticmethod
+    def _tight(a) -> bool:
+        """Few words skipped on either side."""
+        s, k, c, qf, ql, vf, vl = a
+        return k > 0 and ql - qf + 1 <= k * 1.5 + 1 and vl - vf + 1 <= k * 1.5 + 1
+
+    def _good(self, a, verse_len: int) -> bool:
+        s, k, c, qf, ql, vf, vl = a
+        if not self._tight(a):
+            return False
+        unbroken = ql - qf + 1 == k == vl - vf + 1
+        skipped = (ql - qf + 1 - k) + (vl - vf + 1 - k)
+        if (k >= QUOTE_MIN_WORDS and c >= QUOTE_MIN_CONTENT
+                and s >= QUOTE_MIN_SCORE + QUOTE_SKIP_COST * skipped):
+            return True  # a loose quote must be more distinctive
+        if (k >= QUOTE_MIN_WORDS and ql - qf + 1 - k <= 1 and vl - vf + 1 - k <= 1
+                and s >= QUOTE_MIN_RUN_SCORE):
+            return True  # "the Lord is my shepherd": the verse's words, in order
+        return unbroken and k == verse_len and k >= 2 and s >= QUOTE_MIN_RUN_SCORE
+        # ^ a short verse said in full: "Jesus wept", "Pray without ceasing"
+
+    def find(self, text: str):
+        """(book, chapter, verse_start, verse_end) of the quoted verse(s), or None."""
+        q = _quote_words(text)[-QUOTE_WINDOW:]
+        content = sorted({w for w in q if w not in QUOTE_STOP and w in self.index},
+                         key=lambda w: len(self.index[w]))
+        if not content:
+            return None
+        # Candidates: verses sharing the most (rarity-weighted) content words.
+        votes = {}
+        for w in content[:8]:
+            if len(self.index[w]) > 3000:
+                break  # too common to narrow anything down
+            for i in self.index[w]:
+                votes[i] = votes.get(i, 0.0) + self.idf[w]
+        if not votes:
+            return None
+        # Shortlist, then re-rank by shared word pairs (cheap) before the full
+        # alignment, so quotes made of common words still find their verse.
+        pairs = set(zip(q, q[1:]))
+        shortlist = sorted(votes, key=votes.get, reverse=True)[:QUOTE_SHORTLIST]
+        cands = sorted(shortlist, reverse=True, key=lambda i: (
+            len(pairs.intersection(zip(self.words[i], self.words[i][1:]))), votes[i]))[:QUOTE_ALIGN]
+        scored = sorted(((self._align(q, self.words[i]), i) for i in cands), reverse=True,
+                        key=lambda x: (self._good(x[0], len(self.words[x[1]])), x[0][0]))
+        best, i = scored[0]
+        if not self._good(best, len(self.words[i])):
+            return None
+        for a, j in scored[1:]:
+            if (a[0] * QUOTE_MARGIN > best[0] and self._good(a, len(self.words[j]))
+                    and not self._neighbours(i, j)):
+                return None  # another verse fits about as well: ambiguous
+        book, ch, v = self.rows[i]
+        start = end = v
+        # The quote runs on into the next verse(s), or began in the previous one:
+        # only words the best verse did not already account for count.
+        for step, part in ((1, q[best[4] + 1:]), (-1, q[:best[3]])):
+            j = i + step
+            while part and 0 <= j < len(self.rows) and self.rows[j][:2] == (book, ch):
+                a = self._align(part, self.words[j])
+                if a[1] < 3 or a[2] < 2 or not self._tight(a):
+                    break
+                start, end = min(start, self.rows[j][2]), max(end, self.rows[j][2])
+                part = part[a[4] + 1:] if step == 1 else part[:a[3]]
+                j += step
+        return book, ch, start, end
+
+    def _neighbours(self, i: int, j: int) -> bool:
+        return abs(i - j) <= 2 and self.rows[i][:2] == self.rows[j][:2]
+
+
 class Session:
     """Detection across a sermon: remembers the last reference shown so that
     follow-ups ("next verse", "verse seventeen", "read it again") work."""
@@ -558,11 +731,32 @@ class Session:
 
     def hear(self, text: str) -> list:
         refs = self.kjv.find(text)
+        if not refs:
+            quote = self.quote(text)
+            if quote is not None:
+                return [] if quote is self.last else [self._remember(quote)]
         if not refs and self.last is not None:
             refs = self._follow_up(text)
         if refs:
             self.last = refs[-1]
         return refs
+
+    def quote(self, text: str):
+        """The verse quoted in `text`, or None. A quote from the passage already
+        on screen (the preacher reading it aloud) returns self.last unchanged."""
+        ref = self.kjv.find_quote(text)
+        if ref is None:
+            return None
+        last = self.last
+        if (last is not None and last.book == ref.book
+                and (last.chapter, last.verse_start) <= (ref.chapter, ref.verse_start)
+                and (ref.chapter_end, ref.verse_end) <= (last.chapter_end, last.verse_end)):
+            return last
+        return ref
+
+    def _remember(self, ref):
+        self.last = ref
+        return ref
 
     def _follow_up(self, text: str) -> list:
         t = normalize(text).replace("~", " ")

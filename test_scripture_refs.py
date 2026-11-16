@@ -1,5 +1,5 @@
 import unittest
-from scripture_refs import KJV, words_to_digits
+from scripture_refs import KJV, Session, words_to_digits
 
 
 class SpokenReferenceTests(unittest.TestCase):
@@ -90,7 +90,7 @@ class SpokenReferenceTests(unittest.TestCase):
         self.assertEqual(self.labels(text), ["Genesis 5:1-32", "John 5:1-47"])
 
     def test_and_between_chapters_lists_each_chapter(self):
-        # Julius: "chapter 1 and 3" means chapters 1 and 3, not 1 through 3.
+        # "chapter 1 and 3" means chapters 1 and 3, not 1 through 3.
         self.assertEqual(self.labels("Machu Chapter 1 and 3"), ["Matthew 1:1-25", "Matthew 3:1-17"])
         self.assertEqual(self.labels("Genesis 1 and 2"), ["Genesis 1:1-31", "Genesis 2:1-25"])
         self.assertEqual(self.labels("Psalm 1 and 3 and 5"), ["Psalms 1:1-6", "Psalms 3:1-8", "Psalms 5:1-12"])
@@ -166,6 +166,71 @@ class SpokenReferenceTests(unittest.TestCase):
         self.assertEqual(words_to_digits("three sixteen"), "3 16")
         self.assertEqual(words_to_digits("eight twenty eight"), "8 28")
         self.assertEqual(words_to_digits("one hundred nineteen one hundred five"), "119 105")
+
+
+
+class QuotationTests(unittest.TestCase):
+    """A verse quoted without its reference."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kjv = KJV()
+
+    def quote(self, text):
+        ref = self.kjv.find_quote(text)
+        return ref.label() if ref else None
+
+    def test_kjv_wording(self):
+        self.assertEqual(self.quote("For God so loved the world, that he gave his only begotten Son"), "John 3:16")
+        self.assertEqual(self.quote("I can do all things through Christ which strengtheneth me"), "Philippians 4:13")
+        self.assertEqual(self.quote("Trust in the LORD with all thine heart; and lean not unto thine own understanding"), "Proverbs 3:5")
+
+    def test_short_famous_lines(self):
+        self.assertEqual(self.quote("for God so loved the world"), "John 3:16")
+        self.assertEqual(self.quote("the Lord is my shepherd"), "Psalms 23:1")
+        self.assertEqual(self.quote("Jesus wept"), "John 11:35")
+        self.assertEqual(self.quote("pray without ceasing"), "1 Thessalonians 5:17")
+
+    def test_modern_wording(self):
+        self.assertEqual(self.quote("I can do all things through Christ who strengthens me"), "Philippians 4:13")
+        self.assertEqual(self.quote("your word is a lamp to my feet and a light to my path"), "Psalms 119:105")
+        self.assertEqual(self.quote("this is the day that the Lord has made"), "Psalms 118:24")
+        self.assertEqual(self.quote("no weapon formed against me shall prosper"), "Isaiah 54:17")
+
+    def test_quote_inside_a_sentence(self):
+        self.assertEqual(self.quote("so the preacher said for God so loved the world that he gave "
+                                    "his only begotten son and that is the gospel"), "John 3:16")
+
+    def test_quote_across_verses(self):
+        self.assertEqual(self.quote("the Lord is my shepherd I shall not want he maketh me to lie "
+                                    "down in green pastures"), "Psalms 23:1-2")
+
+    def test_ordinary_speech_is_not_a_quote(self):
+        for text in [
+            "we have three services on sunday and everybody is welcome to come",
+            "god loves you and he wants the best for your life this morning",
+            "good morning church it is good to be in the house of the lord today",
+            "lift up your hands and give the lord a praise",
+            "the lord has been faithful to us throughout this year",
+            "in the name of jesus we pray amen",
+        ]:
+            self.assertIsNone(self.quote(text), text)
+
+    def test_stock_phrases_in_many_verses_are_ignored(self):
+        self.assertIsNone(self.quote("and the Lord spake unto Moses saying"))
+        self.assertIsNone(self.quote("verily verily I say unto you"))
+        self.assertIsNone(self.quote("the earth is the Lord's and the fulness thereof"))  # Ps 24:1 = 1 Cor 10:26
+
+    def test_session_uses_quotes_but_keeps_the_passage_on_screen(self):
+        s = Session(self.kjv)
+        self.assertEqual([r.label() for r in s.hear("for God so loved the world")], ["John 3:16"])
+        s = Session(self.kjv)
+        s.hear("John 3:16 to 18")
+        # Reading the displayed passage aloud doesn't replace it with one verse.
+        self.assertEqual(s.hear("for God sent not his Son into the world to condemn the world"), [])
+        self.assertEqual(s.last.label(), "John 3:16-18")
+        # A spoken reference still wins over a quote.
+        self.assertEqual([r.label() for r in s.hear("Romans 8:28, for God so loved the world")], ["Romans 8:28"])
 
 
 if __name__ == "__main__":

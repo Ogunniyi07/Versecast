@@ -1,7 +1,8 @@
 """Browser glue: runs the real scripture_refs.py inside Pyodide.
 
-preview(text)  -> live, stateless look at what's being said (called many times
-                  per sentence while the speaker is still talking).
+preview(text)  -> live look at what's being said (called many times per
+                  sentence while the speaker is still talking). Falls back to a
+                  quoted verse ("for God so loved the world...").
 commit(text)   -> a finished sentence; goes through the Session, so follow-ups
                   ("next verse", "verse seventeen") resolve against the last
                   reference.
@@ -14,6 +15,7 @@ import scripture_refs
 
 _kjv = scripture_refs.KJV()
 _session = scripture_refs.Session(_kjv)
+_kjv.find_quote("")  # build the quote index now, while the page is loading
 
 
 def _out(ref, words_after=0):
@@ -27,7 +29,13 @@ def _out(ref, words_after=0):
 
 
 def preview(text: str) -> str:
-    return json.dumps([_out(r, n) for r, n in _kjv.find_detailed(text)])
+    found = _kjv.find_detailed(text)
+    if not found:
+        quote = _session.quote(text)
+        # Shown at once (after=1); a quote of what's already on screen: nothing.
+        if quote is not None and quote is not _session.last:
+            found = [(quote, 1)]
+    return json.dumps([_out(r, n) for r, n in found])
 
 
 def commit(text: str) -> str:
