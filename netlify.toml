@@ -1,0 +1,11 @@
+# Netlify settings for the browser tester preview.
+# The build step copies the shared detector and KJV database into web/.
+# Manual deploy: python3 build_web.py && npx netlify-cli deploy --prod
+[build]
+  command = "python3 build_web.py"
+  publish = "web"
+
+[[headers]]
+  for = "/kjv.sqlite"
+  [headers.values]
+    Content-Type = "application/octet-stream"

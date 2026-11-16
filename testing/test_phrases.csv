@@ -1,0 +1,251 @@
+﻿ID,Say this,Expected result,Category,Result,Notes
+1,John three sixteen,John 3:16,1. Basic (spoken numbers),,
+2,Genesis one one,Genesis 1:1,1. Basic (spoken numbers),,
+3,Romans eight twenty-eight,Romans 8:28,1. Basic (spoken numbers),,
+4,Jeremiah twenty-nine eleven,Jeremiah 29:11,1. Basic (spoken numbers),,
+5,Philippians four thirteen,Philippians 4:13,1. Basic (spoken numbers),,
+6,Proverbs three five,Proverbs 3:5,1. Basic (spoken numbers),,
+7,Isaiah forty thirty-one,Isaiah 40:31,1. Basic (spoken numbers),,
+8,Matthew six thirty-three,Matthew 6:33,1. Basic (spoken numbers),,
+9,Hebrews eleven one,Hebrews 11:1,1. Basic (spoken numbers),,
+10,Joshua one nine,Joshua 1:9,1. Basic (spoken numbers),,
+11,John chapter three verse sixteen,John 3:16,2. Chapter + verse keywords,,
+12,"John chapter 3, verse 16",John 3:16,2. Chapter + verse keywords,,
+13,John three verse sixteen,John 3:16,2. Chapter + verse keywords,,
+14,John chapter three sixteen,John 3:16,2. Chapter + verse keywords,,
+15,Romans chapter eight and verse twenty-eight,Romans 8:28,2. Chapter + verse keywords,,
+16,"John three, vs sixteen",John 3:16,2. Chapter + verse keywords,,Nigerian usage: 'vs' read aloud as 'verse'
+17,John three colon sixteen,John 3:16,2. Chapter + verse keywords,,People reading the printed reference
+18,John three dot sixteen,John 3:16,2. Chapter + verse keywords,,
+19,John three point sixteen,John 3:16,2. Chapter + verse keywords,,
+20,"John three, sixteen",John 3:16,2. Chapter + verse keywords,,Pause instead of keyword
+21,"Chapter three of John, verse sixteen",John 3:16,2. Chapter + verse keywords,,
+22,"John, the third chapter, the sixteenth verse",John 3:16,2. Chapter + verse keywords,,Ordinals
+23,The sixteenth verse of the third chapter of John,John 3:16,2. Chapter + verse keywords,,Reversed order
+24,Verse sixteen of John chapter three,John 3:16,2. Chapter + verse keywords,,Verse first
+25,"In John three, verse sixteen",John 3:16,2. Chapter + verse keywords,,
+26,Psalm twenty-three,Psalm 23 (whole chapter),3. Whole chapter,,
+27,Psalms twenty-three,Psalm 23,3. Whole chapter,,Plural form
+28,Psalm chapter twenty-three,Psalm 23,3. Whole chapter,,
+29,The twenty-third Psalm,Psalm 23,3. Whole chapter,,Ordinal before book
+30,First Corinthians thirteen,1 Corinthians 13,3. Whole chapter,,
+31,Hebrews chapter eleven,Hebrews 11,3. Whole chapter,,
+32,The whole of Romans eight,Romans 8,3. Whole chapter,,
+33,Read the entire chapter of Isaiah fifty-three,Isaiah 53,3. Whole chapter,,
+34,Genesis one,Genesis 1,3. Whole chapter,,Must NOT be read as Genesis 1:? missing verse
+35,Romans eight verse twenty-eight to the end,Romans 8:28-39,4. Verse ranges,,
+36,Psalm twenty-three verse one to six,Psalm 23:1-6,4. Verse ranges,,
+37,Psalm twenty-three verses one to six,Psalm 23:1-6,4. Verse ranges,,
+38,Psalm twenty-three one to six,Psalm 23:1-6,4. Verse ranges,,
+39,John three sixteen to eighteen,John 3:16-18,4. Verse ranges,,
+40,John three sixteen through eighteen,John 3:16-18,4. Verse ranges,,US 'through'
+41,John three sixteen till eighteen,John 3:16-18,4. Verse ranges,,Nigerian 'till'
+42,John three from verse sixteen to verse eighteen,John 3:16-18,4. Verse ranges,,
+43,John three verse sixteen down to verse eighteen,John 3:16-18,4. Verse ranges,,Preacher phrasing 'down to'
+44,John three sixteen and following,John 3:16 onward,4. Verse ranges,,Open-ended range
+45,Matthew five verses three to twelve,Matthew 5:3-12,4. Verse ranges,,
+46,Ephesians six ten to the end of the chapter,Ephesians 6:10-24,4. Verse ranges,,
+47,Isaiah fifty-three from the beginning to verse five,Isaiah 53:1-5,4. Verse ranges,,
+48,Psalm ninety-one one dash sixteen,Psalm 91:1-16,4. Verse ranges,,Reading a printed dash
+49,First Corinthians thirteen four to seven,1 Corinthians 13:4-7,4. Verse ranges,,
+50,"John one, one to fourteen",John 1:1-14,4. Verse ranges,,
+51,Verse one to verse five of Psalm one,Psalm 1:1-5,4. Verse ranges,,Range before book
+52,John three sixteen and seventeen,John 3:16-17,5. Multiple separate verses,,
+53,Romans ten nine and ten,Romans 10:9-10,5. Multiple separate verses,,
+54,"Psalm one hundred and nineteen verses nine, eleven and one hundred and five","Psalm 119:9, 11, 105",5. Multiple separate verses,,
+55,"Proverbs three five, six and nine","Proverbs 3:5-6, 9",5. Multiple separate verses,,
+56,"Matthew five verse three, then verse eight","Matthew 5:3, 8",5. Multiple separate verses,,
+57,"John three sixteen, also verse thirty-six","John 3:16, 36",5. Multiple separate verses,,
+58,Genesis one and two,Genesis 1-2,6. Multiple chapters,,
+59,Genesis chapters one to three,Genesis 1-3,6. Multiple chapters,,
+60,Genesis chapter one through chapter three,Genesis 1-3,6. Multiple chapters,,
+61,John three sixteen to chapter four verse two,John 3:16-4:2,6. Multiple chapters,,Range crossing chapters
+62,From Matthew five to Matthew seven,Matthew 5-7,6. Multiple chapters,,
+63,Psalm one hundred and twenty to one hundred and thirty-four,Psalms 120-134,6. Multiple chapters,,
+64,First John one nine,1 John 1:9,7. Numbered books,,
+65,One John one nine,1 John 1:9,7. Numbered books,,
+66,First John chapter one verse nine,1 John 1:9,7. Numbered books,,
+67,"The first epistle of John, chapter one, verse nine",1 John 1:9,7. Numbered books,,
+68,First letter of John one nine,1 John 1:9,7. Numbered books,,
+69,Second Timothy three sixteen,2 Timothy 3:16,7. Numbered books,,
+70,Two Timothy three sixteen,2 Timothy 3:16,7. Numbered books,,
+71,Second Corinthians five seventeen,2 Corinthians 5:17,7. Numbered books,,
+72,Paul's second letter to the Corinthians five seventeen,2 Corinthians 5:17,7. Numbered books,,
+73,First Kings eighteen thirty-eight,1 Kings 18:38,7. Numbered books,,
+74,The first book of Kings eighteen,1 Kings 18,7. Numbered books,,
+75,Second Chronicles seven fourteen,2 Chronicles 7:14,7. Numbered books,,
+76,First Samuel seventeen forty-five,1 Samuel 17:45,7. Numbered books,,
+77,Second Samuel twenty-two,2 Samuel 22,7. Numbered books,,
+78,First Peter five seven,1 Peter 5:7,7. Numbered books,,
+79,First Thessalonians five seventeen,1 Thessalonians 5:17,7. Numbered books,,
+80,Second Thessalonians three ten,2 Thessalonians 3:10,7. Numbered books,,
+81,Third John two,3 John 1:2,7. Numbered books,,Single-chapter book
+82,Three John verse two,3 John 1:2,7. Numbered books,,
+83,First Corinthians thirteen,1 Corinthians 13,7. Numbered books,,
+84,Corinthians thirteen four,Ambiguous: 1 or 2 Corinthians,7. Numbered books,,Book number missing — should prompt or default sensibly
+85,John one nine,John 1:9,7. Numbered books,,Must NOT become 1 John
+86,First of John one nine,1 John 1:9,7. Numbered books,,
+87,Jude three,Jude 1:3,8. Single-chapter books,,
+88,Jude verse three,Jude 1:3,8. Single-chapter books,,
+89,Jude chapter one verse three,Jude 1:3,8. Single-chapter books,,
+90,Jude twenty-four and twenty-five,Jude 1:24-25,8. Single-chapter books,,
+91,Obadiah verse four,Obadiah 1:4,8. Single-chapter books,,
+92,Philemon six,Philemon 1:6,8. Single-chapter books,,
+93,Second John six,2 John 1:6,8. Single-chapter books,,
+94,Jude,Jude 1 (whole book),8. Single-chapter books,,
+95,The book of Genesis chapter one verse one,Genesis 1:1,9. Book name variants,,
+96,Psalm number twenty-three,Psalm 23,9. Book name variants,,
+97,The Psalms of David twenty-three,Psalm 23,9. Book name variants,,
+98,Song of Solomon two four,Song of Solomon 2:4,9. Book name variants,,
+99,Song of Songs two four,Song of Solomon 2:4,9. Book name variants,,
+100,Canticles two four,Song of Solomon 2:4,9. Book name variants,,Older name
+101,Revelation twenty-one four,Revelation 21:4,9. Book name variants,,
+102,Revelations twenty-one four,Revelation 21:4,9. Book name variants,,Common plural error
+103,The Revelation of Saint John twenty-one four,Revelation 21:4,9. Book name variants,,
+104,Acts two thirty-eight,Acts 2:38,9. Book name variants,,
+105,The Acts of the Apostles two thirty-eight,Acts 2:38,9. Book name variants,,
+106,The Gospel according to John three sixteen,John 3:16,9. Book name variants,,
+107,Saint John three sixteen,John 3:16,9. Book name variants,,
+108,Saint Matthew five nine,Matthew 5:9,9. Book name variants,,
+109,Gospel of Luke two eleven,Luke 2:11,9. Book name variants,,
+110,Paul's letter to the Romans twelve two,Romans 12:2,9. Book name variants,,
+111,The epistle to the Hebrews thirteen eight,Hebrews 13:8,9. Book name variants,,
+112,Lamentations three twenty-two,Lamentations 3:22,9. Book name variants,,
+113,Ecclesiastes three one,Ecclesiastes 3:1,9. Book name variants,,
+114,Deuteronomy thirty-one six,Deuteronomy 31:6,9. Book name variants,,
+115,Gen one one,Genesis 1:1,10. Spoken abbreviations,,
+116,Deut thirty-one six,Deuteronomy 31:6,10. Spoken abbreviations,,
+117,Matt six thirty-three,Matthew 6:33,10. Spoken abbreviations,,
+118,Rom eight one,Romans 8:1,10. Spoken abbreviations,,
+119,Rev twenty-two thirteen,Revelation 22:13,10. Spoken abbreviations,,
+120,Prov three five,Proverbs 3:5,10. Spoken abbreviations,,
+121,Ps twenty-three,Psalm 23,10. Spoken abbreviations,,Said as 'pee-ess'
+122,Phil four thirteen,Philippians 4:13,10. Spoken abbreviations,,Phil could also mean Philemon — Philemon has 1 chapter so ch.4 = Philippians
+123,Eph two eight,Ephesians 2:8,10. Spoken abbreviations,,
+124,Heb eleven six,Hebrews 11:6,10. Spoken abbreviations,,
+125,Jer twenty-nine eleven,Jeremiah 29:11,10. Spoken abbreviations,,
+126,Isa fifty-three five,Isaiah 53:5,10. Spoken abbreviations,,'eye-sa'
+127,Psalm one hundred and nineteen verse one hundred and five,Psalm 119:105,11. Number phrasing,,
+128,"Psalm a hundred and nineteen, one oh five",Psalm 119:105,11. Number phrasing,,
+129,"Psalm one nineteen, one oh five",Psalm 119:105,11. Number phrasing,,Digit-pair style
+130,Psalm one-one-nine verse one-zero-five,Psalm 119:105,11. Number phrasing,,Digit by digit
+131,Psalm hundred and nineteen verse hundred and five,Psalm 119:105,11. Number phrasing,,No 'one'/'a'
+132,"Psalm one hundred nineteen, one hundred five",Psalm 119:105,11. Number phrasing,,"US style, no 'and'"
+133,Psalm one hundred and fifty,Psalm 150,11. Number phrasing,,
+134,Psalm one fifty,Psalm 150,11. Number phrasing,,
+135,Esther eight nine,Esther 8:9,11. Number phrasing,,
+136,Isaiah sixty-six twenty-four,Isaiah 66:24,11. Number phrasing,,
+137,"Psalm one hundred and nineteen, verse one seventy-six",Psalm 119:176,11. Number phrasing,,"Longest chapter, last verse"
+138,John eleven thirty-five,John 11:35,11. Number phrasing,,Shortest verse
+139,Genesis fifty twenty,Genesis 50:20,11. Number phrasing,,
+140,Matthew twenty-eight nineteen,Matthew 28:19,11. Number phrasing,,
+141,Matthew two eight nineteen,Ambiguous — Matthew 2:8? / 28:19?,11. Number phrasing,,"Digit-by-digit ambiguity; note app behaviour"
+142,John three one six,Ambiguous — John 3:16? / 31:6?,11. Number phrasing,,"John has 21 chapters, so 3:16 is the only valid read"
+143,Turn with me to John chapter three verse sixteen,John 3:16,12. Preacher / sermon context,,Lead-in phrase
+144,Let's open our Bibles to Romans eight twenty-eight,Romans 8:28,12. Preacher / sermon context,,
+145,"If you have your Bible, go to Psalm ninety-one",Psalm 91,12. Preacher / sermon context,,
+146,Our text this morning is taken from Isaiah forty verse thirty-one,Isaiah 40:31,12. Preacher / sermon context,,
+147,"The Bible says in John fourteen six, I am the way",John 14:6,12. Preacher / sermon context,,Reference followed by quoted text
+148,"Jesus said in Matthew eleven twenty-eight, come unto me",Matthew 11:28,12. Preacher / sermon context,,
+149,As it is written in Isaiah fifty-three five,Isaiah 53:5,12. Preacher / sermon context,,
+150,"Read with me from Philippians four, from verse six",Philippians 4:6 onward,12. Preacher / sermon context,,
+151,Somebody shout John three sixteen!,John 3:16,12. Preacher / sermon context,,Energetic/loud delivery
+152,Who has Proverbs eighteen twenty-one? Read it for us,Proverbs 18:21,12. Preacher / sermon context,,
+153,"Let's go to the book of Esther, chapter four, verse fourteen",Esther 4:14,12. Preacher / sermon context,,
+154,Hold Jeremiah twenty-nine eleven in your heart,Jeremiah 29:11,12. Preacher / sermon context,,
+155,"Brethren, Hebrews chapter thirteen, verse five, says",Hebrews 13:5,12. Preacher / sermon context,,
+156,Can we all stand for the reading of Psalm one hundred and twenty-one?,Psalm 121,12. Preacher / sermon context,,
+157,Keep your finger there and go to Romans five eight,Romans 5:8,12. Preacher / sermon context,,
+158,John three... uh... verse sixteen,John 3:16,13. Hesitations & self-corrections,,Filler words
+159,"Romans eight, um, twenty-eight",Romans 8:28,13. Hesitations & self-corrections,,
+160,"Genesis chapter one, verse... verse one",Genesis 1:1,13. Hesitations & self-corrections,,Repeated word
+161,"John three sixteen, sorry, John four twenty-four",John 4:24,13. Hesitations & self-corrections,,Correction should win
+162,"Psalm, no, Proverbs three five",Proverbs 3:5,13. Hesitations & self-corrections,,Book correction
+163,"Matthew five, I mean Matthew six thirty-three",Matthew 6:33,13. Hesitations & self-corrections,,
+164,Isaiah forty verse thirty... thirty-one,Isaiah 40:31,13. Hesitations & self-corrections,,
+165,Let's read Psalm twenty-three — actually just verse four,Psalm 23:4,13. Hesitations & self-corrections,,
+166,Next verse,Previous ref +1 verse,14. Follow-ups / relative refs,,Say after John 3:16 → John 3:17
+167,Previous verse,Previous ref -1 verse,14. Follow-ups / relative refs,,
+168,Verse seventeen,"Same book & chapter, verse 17",14. Follow-ups / relative refs,,Say after John 3:16
+169,Continue to verse twenty,Extend range to verse 20,14. Follow-ups / relative refs,,
+170,"Same chapter, verse ten","Same book & chapter, v10",14. Follow-ups / relative refs,,
+171,Next chapter,"Same book, chapter +1",14. Follow-ups / relative refs,,
+172,Go back to verse one,"Same chapter, v1",14. Follow-ups / relative refs,,
+173,Read it again,Repeat last ref,14. Follow-ups / relative refs,,
+174,Chapter four verse one,"Same book, 4:1",14. Follow-ups / relative refs,,No book named
+175,John three sixteen and Romans five eight,John 3:16 + Romans 5:8,15. Multiple refs in one phrase,,
+176,Compare Matthew five three with Luke six twenty,Matthew 5:3 + Luke 6:20,15. Multiple refs in one phrase,,
+177,"Romans three twenty-three, six twenty-three and ten nine",Romans 3:23 + 6:23 + 10:9,15. Multiple refs in one phrase,,Romans Road — book not repeated
+178,Psalm twenty-three and Psalm ninety-one,Psalm 23 + Psalm 91,15. Multiple refs in one phrase,,
+179,"Genesis one one, John one one",Genesis 1:1 + John 1:1,15. Multiple refs in one phrase,,
+180,Romans three twenty-three A,Romans 3:23 (first part),16. Partial verses & ends,,Scholarly a/b notation
+181,The first part of John three sixteen,John 3:16 (first part),16. Partial verses & ends,,
+182,The last verse of John twenty-one,John 21:25,16. Partial verses & ends,,
+183,The last verse of the Bible,Revelation 22:21,16. Partial verses & ends,,Stretch goal
+184,The end of Romans eight,Romans 8 (end),16. Partial verses & ends,,"Ambiguous; note behaviour"
+185,The Lord's Prayer,Matthew 6:9-13,17. Named passages (stretch),,Stretch goal — no numbers spoken
+186,The Beatitudes,Matthew 5:3-12,17. Named passages (stretch),,
+187,The love chapter,1 Corinthians 13,17. Named passages (stretch),,
+188,The Great Commission,Matthew 28:18-20,17. Named passages (stretch),,
+189,The Ten Commandments,Exodus 20:1-17,17. Named passages (stretch),,
+190,The Shepherd Psalm,Psalm 23,17. Named passages (stretch),,
+191,The faith chapter,Hebrews 11,17. Named passages (stretch),,
+192,The armour of God passage,Ephesians 6:10-18,17. Named passages (stretch),,
+193,Habakkuk two three,Habakkuk 2:3,18. Hard-to-recognise book names,,
+194,Haggai one five,Haggai 1:5,18. Hard-to-recognise book names,,
+195,Nahum one seven,Nahum 1:7,18. Hard-to-recognise book names,,
+196,Zephaniah three seventeen,Zephaniah 3:17,18. Hard-to-recognise book names,,
+197,Zechariah four six,Zechariah 4:6,18. Hard-to-recognise book names,,
+198,Malachi three ten,Malachi 3:10,18. Hard-to-recognise book names,,
+199,Micah six eight,Micah 6:8,18. Hard-to-recognise book names,,
+200,Hosea four six,Hosea 4:6,18. Hard-to-recognise book names,,Can be heard as 'hose a'
+201,Joel two twenty-five,Joel 2:25,18. Hard-to-recognise book names,,
+202,Amos three three,Amos 3:3,18. Hard-to-recognise book names,,
+203,Ezekiel thirty-seven four,Ezekiel 37:4,18. Hard-to-recognise book names,,
+204,Leviticus nineteen eighteen,Leviticus 19:18,18. Hard-to-recognise book names,,
+205,Nehemiah eight ten,Nehemiah 8:10,18. Hard-to-recognise book names,,
+206,Colossians three twenty-three,Colossians 3:23,18. Hard-to-recognise book names,,
+207,Titus two eleven,Titus 2:11,18. Hard-to-recognise book names,,
+208,Ephesians three twenty,Ephesians 3:20,18. Hard-to-recognise book names,,
+209,Galatians five twenty-two,Galatians 5:22,18. Hard-to-recognise book names,,
+210,Ruth one sixteen,Ruth 1:16,18. Hard-to-recognise book names,,Can be heard as 'truth'
+211,Job nineteen twenty-five,Job 19:25,18. Hard-to-recognise book names,,Can be heard as 'job'
+212,Numbers six twenty-four,Numbers 6:24,18. Hard-to-recognise book names,,Book name is also a number word
+213,Mark sixteen fifteen,Mark 16:15,18. Hard-to-recognise book names,,Common word 'mark'
+214,Luke one thirty-seven,Luke 1:37,18. Hard-to-recognise book names,,Can be heard as 'look'
+215,Judges six twelve,Judges 6:12,18. Hard-to-recognise book names,,Must not become Jude
+216,Daniel three seventeen,Daniel 3:17,18. Hard-to-recognise book names,,
+217,Jonah two two,Jonah 2:2,18. Hard-to-recognise book names,,
+218,Exodus fourteen fourteen,Exodus 14:14,18. Hard-to-recognise book names,,
+219,Ezra seven ten,Ezra 7:10,18. Hard-to-recognise book names,,
+220,James one five,James 1:5,18. Hard-to-recognise book names,,Common first name
+221,Acts one eight,Acts 1:8,18. Hard-to-recognise book names,,Can be heard as 'ax'
+222,Philemon one six,Philemon 1:6,18. Hard-to-recognise book names,,Must not become Philippians
+223,Judges sixteen twenty-eight,Judges 16:28,18. Hard-to-recognise book names,,
+224,John twenty-two,Error: John has 21 chapters,19. Invalid / edge cases,,Should fail gracefully
+225,John three forty,Error: John 3 has 36 verses,19. Invalid / edge cases,,
+226,Psalm one hundred and fifty-one,Error: not in KJV (Protestant canon),19. Invalid / edge cases,,
+227,Psalm one hundred and nineteen verse one hundred and seventy-seven,Error: Psalm 119 has 176 verses,19. Invalid / edge cases,,
+228,Obadiah chapter two,Error: Obadiah has 1 chapter,19. Invalid / edge cases,,
+229,Genesis zero,Error: no chapter 0,19. Invalid / edge cases,,
+230,Hezekiah four five,Error: not a book of the Bible,19. Invalid / edge cases,,"Common mistake — Hezekiah is a king, not a book"
+231,Tobit one one,Error / not supported: Apocrypha,19. Invalid / edge cases,,
+232,First Maccabees one,Error / not supported: Apocrypha,19. Invalid / edge cases,,
+233,Genesis,Genesis 1 or prompt for chapter,19. Invalid / edge cases,,Book only
+234,Three sixteen,Prompt for book / use last book,19. Invalid / edge cases,,Numbers only
+235,Verse sixteen,Needs prior context,19. Invalid / edge cases,,
+236,Fourth John one,Error: no 4 John,19. Invalid / edge cases,,
+237,Third Corinthians two,Error: no 3 Corinthians,19. Invalid / edge cases,,
+238,"Hello, can everyone hear me?",No reference — should ignore,19. Invalid / edge cases,,Non-scripture speech
+239,We have three services on Sunday at nine,No reference — should ignore,19. Invalid / edge cases,,Numbers but no book
+240,"Mark my words, I'll be there at two thirty",No reference — should ignore,19. Invalid / edge cases,,False positive: 'Mark' + numbers
+241,Spoken fast,John 3:16,20. Delivery conditions (repeat a known phrase),,Say 'John three sixteen' quickly
+242,Spoken very slowly with long pauses,John 3:16,20. Delivery conditions (repeat a known phrase),,'John... three... sixteen'
+243,With background music / worship playing,John 3:16,20. Delivery conditions (repeat a known phrase),,Mic near speakers
+244,With crowd noise / congregation response,John 3:16,20. Delivery conditions (repeat a known phrase),,'Amen' over the reference
+245,Heavy Yoruba/Igbo/Hausa-accented English,John 3:16,20. Delivery conditions (repeat a known phrase),,"Same phrase, different speakers"
+246,British accent,John 3:16,20. Delivery conditions (repeat a known phrase),,"'Psalm' with silent p, 'Revelation'"
+247,Shouted into the mic,John 3:16,20. Delivery conditions (repeat a known phrase),,Clipping/distortion
+248,Whispered or far from mic,John 3:16,20. Delivery conditions (repeat a known phrase),,Low volume
+249,Over a PA system with echo,John 3:16,20. Delivery conditions (repeat a known phrase),,Reverb
+250,Reference at the very end of a 30 s recording,John 3:16,20. Delivery conditions (repeat a known phrase),,Tests the 30 s cap

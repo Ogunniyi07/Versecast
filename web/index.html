@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VerseCast</title>
+  <meta name="description" content="Say a Bible reference and the KJV verse appears on screen.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%237a4b1e'/><path d='M16 7v18M10 13h12' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <!-- Netlify Forms reads this hidden form at deploy time to learn the fields. -->
+  <form name="feedback" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input name="bot-field"><input name="tester"><input name="verdict"><input name="heard">
+    <input name="detected"><input name="expected"><textarea name="comment"></textarea>
+    <input name="input_mode"><input name="browser"><input name="app_version">
+  </form>
+
+  <main class="wrap">
+    <header class="top">
+      <div>
+        <h1>VerseCast</h1>
+        <p class="sub">Say a Bible reference and the KJV verse appears.</p>
+      </div>
+      <span class="badge">KJV · English</span>
+    </header>
+
+    <section id="loading" class="card loading" aria-live="polite">
+      <div class="load-row"><span class="dot" id="dot-bible"></span><span>Loading the Bible</span><span class="load-note" id="note-bible">starting…</span></div>
+    </section>
+
+    <section class="card controls">
+      <button id="mic" class="mic" disabled aria-label="Start listening">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg>
+      </button>
+      <div class="mic-text">
+        <strong id="mic-label">Loading…</strong>
+        <span id="mic-sub">Tap once and keep talking. Verses appear as soon as you say them.</span>
+      </div>
+      <div class="live" id="live" hidden>
+        <span class="label">Hearing</span>
+        <p id="live-text" class="live-text"></p>
+      </div>
+      <form id="type-form" class="type-form">
+        <input id="type-input" type="text" placeholder="…or type a sentence, e.g. Turn to John chapter three verse sixteen" autocomplete="off" disabled>
+        <button type="submit" id="type-btn" disabled>Check</button>
+      </form>
+      <p class="try">Try: <em>“John three sixteen”</em>, <em>“Psalm 23”</em>, <em>“next verse”</em>, <em>“Romans 8 verse 28 to the end”</em>, <em>“The Lord's Prayer”</em></p>
+    </section>
+
+    <section id="result" class="result" hidden>
+      <div class="heard"><span class="label">Detected from</span><p id="heard"></p></div>
+
+      <div class="screen-head">
+        <span class="label">On screen</span>
+        <button id="hide-btn" class="ghost" type="button" title="Shortcut: H or Esc">Hide verse <kbd>H</kbd></button>
+      </div>
+      <div id="picker" class="picker" hidden>
+        <span class="picker-note">Recent references. The newest is on screen. Pick another to show it (or press its number):</span>
+        <div id="chips" class="chips" role="radiogroup" aria-label="Detected references"></div>
+      </div>
+      <div id="screen" class="screen"></div>
+
+      <form id="fb" class="card feedback">
+        <h2>Was this right?</h2>
+        <div class="verdicts" role="radiogroup" aria-label="Verdict">
+          <label><input type="radio" name="verdict" value="correct" required><span>✓ Right verse</span></label>
+          <label><input type="radio" name="verdict" value="wrong-verse"><span>✗ Wrong verse</span></label>
+          <label><input type="radio" name="verdict" value="missed"><span>Missed it</span></label>
+          <label><input type="radio" name="verdict" value="false-alarm"><span>Showed something I didn't say</span></label>
+          <label><input type="radio" name="verdict" value="misheard"><span>Misheard my words</span></label>
+        </div>
+        <label class="field">What did you say, or what should it have shown?
+          <input name="expected" type="text" placeholder="e.g. I said Psalm 91 verse 1">
+        </label>
+        <label class="field">Anything else? <span class="opt">(optional)</span>
+          <textarea name="comment" rows="2"></textarea>
+        </label>
+        <div class="fb-row">
+          <label class="field small">Your name <span class="opt">(optional)</span>
+            <input name="tester" id="tester" type="text" autocomplete="name">
+          </label>
+        </div>
+        <div class="fb-row end">
+          <span id="fb-status" class="fb-status" aria-live="polite"></span>
+          <button type="submit" class="primary">Send feedback</button>
+        </div>
+      </form>
+    </section>
+
+    <footer class="foot">
+      Listening uses your browser's speech service (Google in Chrome and Edge, Apple in Safari), so it needs internet.
+      Feedback is only sent when you press <em>Send feedback</em>.
+      <span id="version"></span>
+    </footer>
+  </main>
+</body>
+</html>
