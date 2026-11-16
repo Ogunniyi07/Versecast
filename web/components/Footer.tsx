@@ -1,5 +1,3 @@
-import { APP_VERSION } from "./FeedbackDialog";
-
 export function Footer({ onFeedback }: { onFeedback: () => void }) {
   return (
     <footer className="flex flex-col gap-3 border-t border-line pt-6 text-muted sm:flex-row sm:items-center sm:justify-between">
@@ -15,7 +13,6 @@ export function Footer({ onFeedback }: { onFeedback: () => void }) {
           >
             Julius Ogunniyi
           </a>
-          <span className="ml-2 text-xs text-muted/70">{APP_VERSION}</span>
         </p>
       </div>
       <button type="button" onClick={onFeedback} className="self-start font-semibold text-navy underline underline-offset-4 hover:text-brand sm:self-auto">

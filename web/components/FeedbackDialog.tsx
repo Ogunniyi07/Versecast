@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import type { Ref } from "@/lib/detector";
 import type { Take } from "@/lib/useVerseCast";
 
-export const APP_VERSION = "web-0.1";
 
 const VERDICTS: [string, string][] = [
   ["correct", "✓ Right verse"],
@@ -42,7 +41,6 @@ export function FeedbackDialog({ open, onClose, take, history, shown, accent }: 
       input_mode: take?.mode || "",
       accent,
       browser: navigator.userAgent,
-      app_version: APP_VERSION,
     });
     try { localStorage.setItem("vb-tester", body.get("tester") || ""); } catch { /* storage blocked */ }
     setState("sending");
