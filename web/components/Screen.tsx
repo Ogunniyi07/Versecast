@@ -20,18 +20,18 @@ export function Screen({ history, shown, hidden, typedMiss, onPick, onToggleHidd
   const ref = shown >= 0 ? history[shown] : null;
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <h2 className="text-lg font-bold text-muted">On screen</h2>
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
         <ArrowButton dir={-1} disabled={!ref} onClick={() => onStep(-1)} />
         <ArrowButton dir={1} disabled={!ref} onClick={() => onStep(1)} />
         <button
           type="button"
           onClick={onOpenDisplay}
           title="Show only the verse in its own window, for a projector or second screen"
-          className="flex items-center gap-2 rounded-xl border border-navy px-4 py-2 hover:bg-slate-50"
+          className="flex h-[42px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-navy px-4 hover:bg-slate-50"
         >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="2" y="4" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" />
           </svg>
           Open display
@@ -41,10 +41,10 @@ export function Screen({ history, shown, hidden, typedMiss, onPick, onToggleHidd
           onClick={onToggleHidden}
           disabled={!ref}
           title="Shortcut: H or Esc"
-          className="flex items-center gap-2 rounded-xl border border-navy px-4 py-2 hover:bg-slate-50 disabled:border-line disabled:text-muted"
+          className="flex h-[42px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-navy px-4 hover:bg-slate-50 disabled:border-line disabled:text-muted"
         >
           {hidden ? "Show verse" : "Hide verse"}
-          <kbd className="rounded border border-current px-1.5 text-xs leading-5">H</kbd>
+          <kbd className="hidden rounded border border-current px-1.5 text-xs leading-5 sm:inline">H</kbd>
         </button>
         </div>
       </div>
@@ -145,7 +145,7 @@ function ArrowButton({ dir, disabled, onClick }: { dir: 1 | -1; disabled: boolea
       disabled={disabled}
       aria-label={label}
       title={`${label} (${dir > 0 ? "→" : "←"} key)`}
-      className="grid size-[42px] place-items-center rounded-xl border border-navy hover:bg-slate-50 disabled:border-line disabled:text-muted"
+      className="grid h-[42px] w-full place-items-center rounded-xl sm:w-[42px] border border-navy hover:bg-slate-50 disabled:border-line disabled:text-muted"
     >
       <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {dir > 0 ? <path d="M5 12h14M13 6l6 6-6 6" /> : <path d="M19 12H5M11 6l-6 6 6 6" />}

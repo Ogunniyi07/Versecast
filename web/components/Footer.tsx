@@ -15,7 +15,7 @@ export function Footer({ onFeedback }: { onFeedback: () => void }) {
           </a>
         </p>
       </div>
-      <button type="button" onClick={onFeedback} className="self-start font-semibold text-navy underline underline-offset-4 hover:text-brand sm:self-auto">
+      <button type="button" onClick={onFeedback} className="self-end font-semibold text-navy underline underline-offset-4 hover:text-brand sm:self-auto">
         Send feedback
       </button>
     </footer>
