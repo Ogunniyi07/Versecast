@@ -39,7 +39,3 @@ def focus(label: str) -> str:
     if refs:
         _session.last = refs[-1]
     return json.dumps(bool(refs))
-
-
-def detect(text: str) -> str:  # older name, kept for compatibility
-    return commit(text)

@@ -14,7 +14,7 @@ Other controls:
 
 - When several references come up, the newest is shown. Click an earlier one, or press its number key (1–9), to show it instead.
 - Press **H** or **Esc** to hide the verse instantly, and again to bring it back.
-- **Was this right?** sends feedback to help improve recognition.
+- **Send feedback** (bottom of the page) tells us what went right or wrong.
 
 ## What it recognises
 
@@ -46,25 +46,30 @@ microphone ──► browser speech recognition ──► reference detector ─
 
 - **Speech recognition:** the browser's built-in service. Words arrive while you are still speaking, so a verse can be shown before you finish the sentence. Google (Chrome, Edge) or Apple (Safari) processes the audio.
 - **`scripture_refs.py`** finds references in the transcript. It handles spoken numbers, "chapter"/"verse" wording, ranges, lists, ordinals, corrections and follow-ups. It is plain Python (standard library only) and runs inside the browser through [Pyodide](https://pyodide.org).
+- **The interface** is a [Next.js](https://nextjs.org) app styled with [Tailwind CSS](https://tailwindcss.com), exported as a static site, so it needs no server.
 - **`kjv.sqlite`** holds the 31,102 KJV verses, built by `build_kjv_db.py` from [thiagobodruk/bible](https://github.com/thiagobodruk/bible).
 
 ## Running it locally
 
-Requires Python 3.9 or newer. There are no packages to install.
+Requires Python 3.9+ and Node.js 18+.
 
 ```bash
-python3 build_web.py                  # copies the detector and database into web/
-python3 -m http.server 8000 -d web    # then open http://localhost:8000
+python3 build_web.py      # copies the detector and database into web/public/
+cd web
+npm install
+npm run dev               # then open http://localhost:3000
 ```
+
+Run `python3 build_web.py` again whenever `scripture_refs.py` changes. To build the static site, run `npm run build`; the result is in `web/out/`.
 
 ## Deploying
 
-The repo deploys to [Netlify](https://www.netlify.com) as-is. `netlify.toml` runs `build_web.py` and publishes `web/`. Feedback from the form is collected by Netlify Forms; turn on form detection in the site settings.
+The repo deploys to [Netlify](https://www.netlify.com) as-is. `netlify.toml` runs `build_web.py`, builds the Next.js app and publishes `web/out/`. Feedback is collected by Netlify Forms (the form is declared in `web/public/__forms.html`); turn on form detection in the site settings.
 
 To deploy manually:
 
 ```bash
-python3 build_web.py && npx netlify-cli deploy --prod
+python3 build_web.py && (cd web && npm run build) && npx netlify-cli deploy --prod --dir web/out
 ```
 
 ## Tests
@@ -88,8 +93,12 @@ python3 testing/run_phrases.py        # writes testing/results_text.csv
 scripture_refs.py      reference detector (KJV, Session for follow-ups)
 build_kjv_db.py        builds kjv.sqlite from the KJV JSON
 kjv.sqlite             KJV verse database
-build_web.py           copies the detector and database into web/
-web/                   the web app (HTML, CSS, JS, Pyodide glue)
+build_web.py           copies the detector and database into web/public/
+web/                   the web app (Next.js + Tailwind CSS)
+  app/                 page and layout
+  components/          header, mic, type box, verse screen, feedback dialog
+  lib/                 detector loader (Pyodide) and listening logic
+  public/detect.py     glue between the page and scripture_refs.py
 testing/               250-phrase test sheet and grader
 test_*.py              unit tests
 netlify.toml           Netlify build settings

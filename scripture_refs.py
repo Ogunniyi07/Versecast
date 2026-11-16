@@ -238,7 +238,7 @@ def normalize(text: str) -> str:
     # "chapter 1 and verse 2", "chapter 3, from verse 16" (not after a verse)
     t = re.sub(r"(?<![\d:])(?<!:\s)(\d+)\s*,?\s*(?:and|from|starting\s+(?:at|from))?\s*:", r"\1:", t)
     t = re.sub(r"(\d+)\s+(?:and\s+)?(?:the\s+)?following(?:\s+verses?)?\b", r"\1 to the end", t)
-    t = re.sub(r"(\d+)\s+onwards?\b", r"\1 to the end", t)
+    t = re.sub(r"(\d+)\s+(?:and\s+)?onwards?\b", r"\1 to the end", t)
     t = re.sub(rf"(\d+)\s*{RANGE_WORD}\s*#\s*(\d+)\s*:\s*(\d+)", r"\1-\2:\3", t)  # "16 to chapter 4 verse 2"
     t = re.sub(rf"(\d+)\s*{RANGE_WORD}\s*[#:]?\s*(\d+)", r"\1-\2", t)
     # "and" between numbers: a list for chapters ("Matthew 1 and 3" = two

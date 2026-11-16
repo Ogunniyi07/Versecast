@@ -1,20 +1,20 @@
-"""Copy the shared Python detector and KJV database into web/ before deploying.
+"""Copy the shared Python detector and KJV database into the web app.
 
     python3 build_web.py
 
-The browser preview runs the same scripture_refs.py as the desktop app, so
-always run this after changing scripture_refs.py or kjv.sqlite.
-
-Local preview (VS Code's built-in preview server refuses .py/.sqlite files):
-    python3 -m http.server 8000 -d web      then open http://localhost:8000
+The web app (web/, Next.js) runs the same scripture_refs.py in the browser
+through Pyodide, so run this after changing scripture_refs.py or kjv.sqlite.
+Then:
+    cd web && npm run dev        # local development, http://localhost:3000
+    cd web && npm run build      # static site in web/out/
 """
 import shutil
 from pathlib import Path
 
 HERE = Path(__file__).parent
-WEB = HERE / "web"
+PUBLIC = HERE / "web" / "public"
 
 for name in ("scripture_refs.py", "kjv.sqlite"):
-    shutil.copy2(HERE / name, WEB / name)
-    (WEB / name).chmod(0o644)  # readable by web servers / deploy tools
-    print(f"copied {name} -> web/{name}")
+    shutil.copy2(HERE / name, PUBLIC / name)
+    (PUBLIC / name).chmod(0o644)  # readable by web servers / deploy tools
+    print(f"copied {name} -> web/public/{name}")

@@ -1,9 +1,12 @@
-# Netlify settings for the browser tester preview.
-# The build step copies the shared detector and KJV database into web/.
-# Manual deploy: python3 build_web.py && npx netlify-cli deploy --prod
+# Netlify settings for the VerseCast web app (Next.js static export).
+# The build copies the shared detector and KJV database into web/public/,
+# then builds the static site into web/out/.
 [build]
-  command = "python3 build_web.py"
-  publish = "web"
+  command = "python3 build_web.py && cd web && npm ci && npm run build"
+  publish = "web/out"
+
+[build.environment]
+  NODE_VERSION = "20"
 
 [[headers]]
   for = "/kjv.sqlite"

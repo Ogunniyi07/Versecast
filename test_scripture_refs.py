@@ -149,6 +149,7 @@ class SpokenReferenceTests(unittest.TestCase):
         self.assertEqual(self.labels("Acts 18."), ["Acts 18:1-28"])          # chapter 18 exists: keep
         self.assertEqual(self.labels("Rev. 2213."), ["Revelation 22:13"])
         self.assertEqual(self.labels("John 340."), [])                        # 3:40 doesn't exist
+        self.assertEqual(self.labels("Romans eight twenty eight and onward"), ["Romans 8:28-39"])
         self.assertEqual(self.labels("John 3, Col. 16."), ["John 3:16"])
         self.assertEqual(self.labels("Romans 10, 9, and 10."), ["Romans 10:9-10"])
         self.assertEqual(self.labels("Matthew 5 verse 3. Then verse 8."), ["Matthew 5:3", "Matthew 5:8"])
