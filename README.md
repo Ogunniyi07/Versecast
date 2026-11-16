@@ -13,7 +13,9 @@ VerseCast listens to a sermon and puts the Bible verse on screen as soon as the 
 Other controls:
 
 - When several references come up, the newest is shown. Click an earlier one, or press its number key (1–9), to show it instead.
+- Use the **←** and **→** buttons (or arrow keys) to step to the previous or next verse.
 - Press **H** or **Esc** to hide the verse instantly, and again to bring it back.
+- **Open display** opens a window that shows only the verse, for a projector or second screen. It follows the main page live. Press **F** in it for full screen. In Chrome and Edge it can open straight onto a connected second screen after you allow it once. Passages too long for the screen scroll slowly on their own; pause, slow down or speed up from the main page (or press **P**, **−**, **+**).
 - **Send feedback** (bottom of the page) tells us what went right or wrong.
 
 ## What it recognises

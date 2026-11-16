@@ -21,7 +21,7 @@ type SpeechRecognitionLike = any;
 
 export type Status = "loading" | "ready" | "unsupported" | "error";
 
-export type Take = { text: string; mode: "spoken" | "typed" };
+export type Take = { text: string; mode: "spoken" | "typed" | "arrows" };
 
 export function useVerseCast() {
   const [status, setStatus] = useState<Status>("loading");
@@ -42,6 +42,8 @@ export function useVerseCast() {
   const waitTimer = useRef<ReturnType<typeof setTimeout>>();
   const historyRef = useRef<Ref[]>([]);
   historyRef.current = history;
+  const shownRef = useRef(-1);
+  shownRef.current = shown;
 
   // loading
   useEffect(() => {
@@ -189,9 +191,33 @@ export function useVerseCast() {
 
   const toggleHidden = useCallback(() => setHidden((h) => !h), []);
 
+  // Arrow buttons / keys: the verse after or before what's on screen
+  // ("next" after John 3:36 is John 4:1; after Romans 8:28-39 it is 9:1).
+  const step = useCallback((dir: 1 | -1) => {
+    const d = detector.current;
+    const ref = historyRef.current[shownRef.current];
+    if (!d || !ref) return;
+    d.focus(ref.label);
+    const [next] = d.commit(dir > 0 ? "next verse" : "previous verse");
+    if (!next) return; // e.g. "previous" at Genesis 1:1
+    // Replace the shown entry instead of adding one, so stepping through
+    // verses doesn't push the preacher's references out of "Recent".
+    const list = historyRef.current.slice();
+    const existing = list.findIndex((h) => h.label === next.label);
+    let index = shownRef.current;
+    if (existing >= 0 && existing !== index) index = existing;
+    else list[index] = next;
+    historyRef.current = list;
+    utterRefs.current = [];
+    setHistory(list);
+    setShown(index);
+    setHidden(false);
+    setTake({ text: dir > 0 ? "Next verse" : "Previous verse", mode: "arrows" });
+  }, []);
+
   return {
     status, statusNote, listening, hearing, history, shown, hidden, take, notice, typedMiss,
-    toggleListening, check, pick, toggleHidden,
+    toggleListening, check, pick, toggleHidden, step,
     current: shown >= 0 ? history[shown] : null,
     onSpeech, // exposed for automated tests
   };
