@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { MicPanel } from "@/components/MicPanel";
 import { Screen } from "@/components/Screen";
 import { TypeForm } from "@/components/TypeForm";
+import { track } from "@/lib/analytics";
 import { openChannel, openDisplayWindow, type DisplayMessage, type ScrollAction, type ScrollStatus } from "@/lib/display";
 import { useVerseCast } from "@/lib/useVerseCast";
 
@@ -90,7 +91,7 @@ export default function Home() {
         onPick={vc.pick}
         onToggleHidden={vc.toggleHidden}
         onStep={vc.step}
-        onOpenDisplay={openDisplayWindow}
+        onOpenDisplay={() => { track("open-display"); openDisplayWindow(); }}
         scroll={scrollStatus}
         onScroll={sendScroll}
       />

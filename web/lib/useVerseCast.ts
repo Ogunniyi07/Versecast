@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { accentLabel, DEFAULT_ACCENT, FALLBACK_ACCENT } from "./accents";
 import { loadDetector, type Detector, type Ref } from "./detector";
+import { track } from "./analytics";
 
 const HISTORY_MAX = 9;
 const WAIT_VERSE_MS = 350;
@@ -47,6 +48,7 @@ export function useVerseCast() {
   const historyRef = useRef<Ref[]>([]);
   historyRef.current = history;
   const shownRef = useRef(-1);
+  const lastCounted = useRef(""); // so a verse previewed then committed counts once
   shownRef.current = shown;
 
   // loading
@@ -90,6 +92,11 @@ export function useVerseCast() {
     setHidden(false);
     setTypedMiss(false);
     setTake({ text, mode });
+    const newest = labels[labels.length - 1];
+    if (newest !== lastCounted.current) {
+      lastCounted.current = newest;
+      track(mode === "typed" ? "verse-shown-typed" : "verse-shown-spoken");
+    }
   }, []);
 
   const onSpeech = useCallback((text: string, final: boolean) => {
@@ -157,6 +164,7 @@ export function useVerseCast() {
         setAccentState(FALLBACK_ACCENT);
         return; // onend restarts recognition with the new accent
       }
+      track(`error-${e.error}`);
       if (/not-allowed|service-not-allowed/.test(e.error)) {
         setNotice("Microphone blocked. Allow mic access in the address bar, or type a reference below.");
       } else if (e.error === "network") {
@@ -178,6 +186,7 @@ export function useVerseCast() {
     setNotice(null);
     setHearing({ final: "", interim: "" });
     setListening(true);
+    track(`listen-start-${accentRef.current}`);
     try {
       r.start();
     } catch (e: any) {
@@ -193,6 +202,7 @@ export function useVerseCast() {
     accentRef.current = code;
     setAccentState(code);
     try { localStorage.setItem("vb-accent", code); } catch { /* storage blocked */ }
+    track(`accent-${code}`);
     if (listeningRef.current) {
       stop();
       setTimeout(start, 300);
@@ -213,6 +223,7 @@ export function useVerseCast() {
     } else {
       setTake({ text, mode: "typed" });
       setTypedMiss(true);
+      track("typed-not-found");
     }
   }, [present]);
 
