@@ -1,7 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { track } from "@/lib/analytics";
 import type { Ref } from "@/lib/detector";
+import { displayLabel } from "@/lib/format";
 import type { Take } from "@/lib/useVerseCast";
+
+// What the dialog reports on, captured when it opens. "wrong-verse" is the
+// quick report from the button under the verse.
+export type FeedbackSnapshot = { kind: "general" | "wrong-verse"; take: Take | null; history: Ref[]; shown: number };
 
 
 const VERDICTS: [string, string][] = [
@@ -13,9 +19,15 @@ const VERDICTS: [string, string][] = [
   ["other", "Something else"],
 ];
 
-type Props = { open: boolean; onClose: () => void; take: Take | null; history: Ref[]; shown: number; accent: string };
+type Props = { snapshot: FeedbackSnapshot | null; onClose: () => void; accent: string };
 
-export function FeedbackDialog({ open, onClose, take, history, shown, accent }: Props) {
+export function FeedbackDialog({ snapshot, onClose, accent }: Props) {
+  const open = snapshot !== null;
+  const quick = snapshot?.kind === "wrong-verse";
+  const take = snapshot?.take ?? null;
+  const history = snapshot?.history ?? [];
+  const shown = snapshot?.shown ?? -1;
+  const shownRef = shown >= 0 ? history[shown] : null;
   const ref = useRef<HTMLDialogElement>(null);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
@@ -33,7 +45,7 @@ export function FeedbackDialog({ open, onClose, take, history, shown, accent }: 
     const body = new URLSearchParams({
       "form-name": "feedback",
       tester: String(f.get("tester") || "").trim(),
-      verdict: String(f.get("verdict") || ""),
+      verdict: quick ? "wrong-verse" : String(f.get("verdict") || ""),
       heard: take?.text || "",
       detected: history.map((r, i) => (i === shown ? `[${r.label}]` : r.label)).join("; ") || "(none)",
       expected: String(f.get("expected") || "").trim(),
@@ -52,6 +64,7 @@ export function FeedbackDialog({ open, onClose, take, history, shown, accent }: 
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setState("sent");
+      if (quick) track("wrong-verse-sent");
     } catch (err) {
       setError((err as Error).message);
       setState("error");
@@ -70,18 +83,33 @@ export function FeedbackDialog({ open, onClose, take, history, shown, accent }: 
       {state === "sent" ? (
         <div className="p-8">
           <h2 className="text-2xl font-bold">Thank you!</h2>
-          <p className="mt-2 text-muted">Your feedback was sent.</p>
+          <p className="mt-2 text-muted">
+            {quick ? "Your report helps VerseCast learn what it gets wrong." : "Your feedback was sent."}
+          </p>
           <button onClick={onClose} className="mt-6 h-12 rounded-xl bg-navy px-8 font-semibold text-white">Close</button>
         </div>
       ) : (
         <form onSubmit={submit} className="flex flex-col gap-5 p-8">
-          <div>
-            <h2 className="text-2xl font-bold">Send feedback</h2>
-            <p className="mt-1 text-sm text-muted">
-              {take ? <>About: <span className="text-navy">“{take.text}”</span></> : "Tell us how VerseCast is working for you."}
-            </p>
-          </div>
-          <fieldset className="flex flex-wrap gap-2">
+          {quick ? (
+            <div>
+              <h2 className="text-2xl font-bold">Wrong verse?</h2>
+              <p className="mt-1 text-sm text-muted">This is sent with your report:</p>
+              <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-2xl bg-slate-50 px-4 py-3 text-sm">
+                <dt className="font-semibold text-muted">We heard</dt>
+                <dd className="text-navy">{take?.text ? `“${take.text}”` : "(nothing)"}</dd>
+                <dt className="font-semibold text-muted">We showed</dt>
+                <dd className="font-semibold text-navy">{shownRef ? displayLabel(shownRef.label) : "(nothing)"}</dd>
+              </dl>
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-2xl font-bold">Send feedback</h2>
+              <p className="mt-1 text-sm text-muted">
+                {take ? <>About: <span className="text-navy">“{take.text}”</span></> : "Tell us how VerseCast is working for you."}
+              </p>
+            </div>
+          )}
+          {!quick && <fieldset className="flex flex-wrap gap-2">
             <legend className="mb-2 font-semibold">How did it do?</legend>
             {VERDICTS.map(([value, label], i) => (
               <label key={value} className="cursor-pointer">
@@ -91,10 +119,12 @@ export function FeedbackDialog({ open, onClose, take, history, shown, accent }: 
                 </span>
               </label>
             ))}
-          </fieldset>
+          </fieldset>}
           <label className="flex flex-col gap-1.5 text-sm font-semibold">
-            What did you say, or what should it have shown?
-            <input name="expected" placeholder="e.g. I said Psalm 91 verse 1" className="h-12 rounded-xl border border-line px-4 font-normal focus:border-navy focus:outline-none" />
+            {quick
+              ? <span>What should it have shown? <span className="font-normal text-muted">(optional)</span></span>
+              : "What did you say, or what should it have shown?"}
+            <input name="expected" autoFocus={quick} placeholder="e.g. I said Psalm 91 verse 1" className="h-12 rounded-xl border border-line px-4 font-normal focus:border-navy focus:outline-none" />
           </label>
           <label className="flex flex-col gap-1.5 text-sm font-semibold">
             <span>Anything else? <span className="font-normal text-muted">(optional)</span></span>

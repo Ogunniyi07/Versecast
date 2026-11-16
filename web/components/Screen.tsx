@@ -13,9 +13,10 @@ type Props = {
   onStep: (dir: 1 | -1) => void;
   scroll: ScrollStatus | null;          // the display window's auto-scroll, if open
   onScroll: (action: ScrollAction) => void;
+  onReport: () => void;
 };
 
-export function Screen({ history, shown, hidden, typedMiss, onPick, onToggleHidden, onOpenDisplay, onStep, scroll, onScroll }: Props) {
+export function Screen({ history, shown, hidden, typedMiss, onPick, onToggleHidden, onOpenDisplay, onStep, scroll, onScroll, onReport }: Props) {
   const ref = shown >= 0 ? history[shown] : null;
   return (
     <section className="flex flex-col gap-4">
@@ -110,6 +111,18 @@ export function Screen({ history, shown, hidden, typedMiss, onPick, onToggleHidd
           </>
         )}
       </div>
+      {ref && !hidden && (
+        <button
+          type="button"
+          onClick={onReport}
+          className="flex items-center gap-1.5 self-end text-sm font-semibold text-muted underline-offset-4 hover:text-brand hover:underline"
+        >
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 22V4a1 1 0 0 1 1-1h11l-2 4 2 4H5" />
+          </svg>
+          Wrong verse? Tell us
+        </button>
+      )}
     </section>
   );
 }

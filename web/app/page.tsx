@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FeedbackDialog } from "@/components/FeedbackDialog";
+import { FeedbackDialog, type FeedbackSnapshot } from "@/components/FeedbackDialog";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { MicPanel } from "@/components/MicPanel";
@@ -13,7 +13,12 @@ import { useVerseCast } from "@/lib/useVerseCast";
 
 export default function Home() {
   const vc = useVerseCast();
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  // What the feedback dialog is about, frozen when it opens (listening carries on).
+  const [feedback, setFeedback] = useState<FeedbackSnapshot | null>(null);
+  const openFeedback = (kind: FeedbackSnapshot["kind"]) => {
+    if (kind === "wrong-verse") track("wrong-verse-open");
+    setFeedback({ kind, take: vc.take, history: [...vc.history], shown: vc.shown });
+  };
   const { toggleHidden, pick, step, current, hidden } = vc;
   // Channel to the presentation window (/display/).
   const channel = useRef<BroadcastChannel | null>(null);
@@ -94,20 +99,14 @@ export default function Home() {
         onOpenDisplay={() => { track("open-display"); openDisplayWindow(); }}
         scroll={scrollStatus}
         onScroll={sendScroll}
+        onReport={() => openFeedback("wrong-verse")}
       />
 
       <div className="mt-auto">
-        <Footer onFeedback={() => setFeedbackOpen(true)} />
+        <Footer onFeedback={() => openFeedback("general")} />
       </div>
 
-      <FeedbackDialog
-        open={feedbackOpen}
-        onClose={() => setFeedbackOpen(false)}
-        take={vc.take}
-        accent={vc.accent}
-        history={vc.history}
-        shown={vc.shown}
-      />
+      <FeedbackDialog snapshot={feedback} onClose={() => setFeedback(null)} accent={vc.accent} />
     </main>
   );
 }
