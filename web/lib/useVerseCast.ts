@@ -10,11 +10,13 @@
 // When a sentence ends it is committed, so follow-ups ("next verse") resolve.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { accentLabel, DEFAULT_ACCENT, FALLBACK_ACCENT } from "./accents";
 import { loadDetector, type Detector, type Ref } from "./detector";
 
 const HISTORY_MAX = 9;
 const WAIT_VERSE_MS = 350;
 const WAIT_CHAPTER_MS = 1200;
+const ALTERNATIVES = 5; // the speech service's other guesses for a finished sentence
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type SpeechRecognitionLike = any;
@@ -33,6 +35,8 @@ export function useVerseCast() {
   const [hidden, setHidden] = useState(false);
   const [take, setTake] = useState<Take | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [accent, setAccentState] = useState(DEFAULT_ACCENT);
+  const accentRef = useRef(DEFAULT_ACCENT);
   const [typedMiss, setTypedMiss] = useState(false);
 
   const detector = useRef<Detector | null>(null);
@@ -46,6 +50,13 @@ export function useVerseCast() {
   shownRef.current = shown;
 
   // loading
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("vb-accent");
+      if (saved) { accentRef.current = saved; setAccentState(saved); }
+    } catch { /* storage blocked */ }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     loadDetector((note) => !cancelled && setStatusNote(note))
@@ -114,15 +125,21 @@ export function useVerseCast() {
     const r = new SR();
     r.continuous = true;
     r.interimResults = true;
-    r.lang = "en-US";
-    r.maxAlternatives = 1;
+    r.lang = accentRef.current;
+    r.maxAlternatives = ALTERNATIVES;
     r.onresult = (e: any) => {
       let finals = "", interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const res = e.results[i];
         if (res.isFinal) {
-          finals += res[0].transcript;
-          onSpeech(res[0].transcript, true);
+          // Of the service's guesses, use the first that contains a Bible
+          // reference; otherwise its top guess.
+          let best = res[0].transcript;
+          for (let j = 0; j < res.length; j++) {
+            if (detector.current?.preview(res[j].transcript).length) { best = res[j].transcript; break; }
+          }
+          finals += best;
+          onSpeech(best, true);
         } else {
           interim += res[0].transcript;
         }
@@ -132,6 +149,14 @@ export function useVerseCast() {
     };
     r.onerror = (e: any) => {
       if (e.error === "no-speech" || e.error === "aborted") return;
+      if (e.error === "language-not-supported" && r.lang !== FALLBACK_ACCENT) {
+        // e.g. Safari without Nigerian English: carry on in American English.
+        setNotice(`${accentLabel(r.lang)} isn't available in this browser, so VerseCast switched to ${accentLabel(FALLBACK_ACCENT)}. Chrome supports more accents.`);
+        r.lang = FALLBACK_ACCENT;
+        accentRef.current = FALLBACK_ACCENT;
+        setAccentState(FALLBACK_ACCENT);
+        return; // onend restarts recognition with the new accent
+      }
       if (/not-allowed|service-not-allowed/.test(e.error)) {
         setNotice("Microphone blocked. Allow mic access in the address bar, or type a reference below.");
       } else if (e.error === "network") {
@@ -162,6 +187,17 @@ export function useVerseCast() {
   }, [onSpeech, stop]);
 
   const toggleListening = useCallback(() => (listeningRef.current ? stop() : start()), [start, stop]);
+
+  // Change accent; if listening, restart recognition so it takes effect now.
+  const setAccent = useCallback((code: string) => {
+    accentRef.current = code;
+    setAccentState(code);
+    try { localStorage.setItem("vb-accent", code); } catch { /* storage blocked */ }
+    if (listeningRef.current) {
+      stop();
+      setTimeout(start, 300);
+    }
+  }, [start, stop]);
 
   useEffect(() => () => stop(), [stop]);
 
@@ -217,7 +253,7 @@ export function useVerseCast() {
 
   return {
     status, statusNote, listening, hearing, history, shown, hidden, take, notice, typedMiss,
-    toggleListening, check, pick, toggleHidden, step,
+    toggleListening, check, pick, toggleHidden, step, accent, setAccent,
     current: shown >= 0 ? history[shown] : null,
     onSpeech, // exposed for automated tests
   };

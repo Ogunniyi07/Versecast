@@ -14,9 +14,9 @@ const VERDICTS: [string, string][] = [
   ["other", "Something else"],
 ];
 
-type Props = { open: boolean; onClose: () => void; take: Take | null; history: Ref[]; shown: number };
+type Props = { open: boolean; onClose: () => void; take: Take | null; history: Ref[]; shown: number; accent: string };
 
-export function FeedbackDialog({ open, onClose, take, history, shown }: Props) {
+export function FeedbackDialog({ open, onClose, take, history, shown, accent }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
@@ -40,6 +40,7 @@ export function FeedbackDialog({ open, onClose, take, history, shown }: Props) {
       expected: String(f.get("expected") || "").trim(),
       comment: String(f.get("comment") || "").trim(),
       input_mode: take?.mode || "",
+      accent,
       browser: navigator.userAgent,
       app_version: APP_VERSION,
     });

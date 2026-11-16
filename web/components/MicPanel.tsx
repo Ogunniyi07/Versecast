@@ -1,3 +1,4 @@
+import { ACCENTS } from "@/lib/accents";
 import type { Status } from "@/lib/useVerseCast";
 
 type Props = {
@@ -7,9 +8,11 @@ type Props = {
   hearing: { final: string; interim: string };
   notice: string | null;
   onToggle: () => void;
+  accent: string;
+  onAccent: (code: string) => void;
 };
 
-export function MicPanel({ status, statusNote, listening, hearing, notice, onToggle }: Props) {
+export function MicPanel({ status, statusNote, listening, hearing, notice, onToggle, accent, onAccent }: Props) {
   const ready = status === "ready";
   const label =
     status === "loading" ? statusNote
@@ -50,6 +53,21 @@ export function MicPanel({ status, statusNote, listening, hearing, notice, onTog
           <p className="mt-1 text-muted sm:text-lg">{sub}</p>
         </div>
       </div>
+      {status !== "unsupported" && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+          <label className="flex items-center gap-2">
+            <span className="font-semibold text-navy">Accent</span>
+            <select
+              value={accent}
+              onChange={(e) => onAccent(e.target.value)}
+              className="rounded-lg border border-line bg-white px-2 py-1.5 text-navy focus:border-navy focus:outline-none"
+            >
+              {ACCENTS.map((a) => <option key={a.code} value={a.code}>{a.label}</option>)}
+            </select>
+          </label>
+          <span>For best results, pick the speaker&apos;s accent, use Chrome, and keep the mic close to the speaker.</span>
+        </div>
+      )}
       {listening && (
         <p className="min-h-[1.5em] rounded-xl bg-slate-50 px-4 py-3 text-navy" aria-live="polite">
           <span className="mr-2 text-xs font-bold uppercase tracking-wider text-muted">Hearing</span>

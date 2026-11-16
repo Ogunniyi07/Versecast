@@ -76,6 +76,8 @@ export default function Home() {
         hearing={vc.hearing}
         notice={vc.notice}
         onToggle={vc.toggleListening}
+        accent={vc.accent}
+        onAccent={vc.setAccent}
       />
 
       <TypeForm disabled={vc.status === "loading" || vc.status === "error"} onCheck={vc.check} />
@@ -101,6 +103,7 @@ export default function Home() {
         open={feedbackOpen}
         onClose={() => setFeedbackOpen(false)}
         take={vc.take}
+        accent={vc.accent}
         history={vc.history}
         shown={vc.shown}
       />

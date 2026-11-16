@@ -46,7 +46,7 @@ microphone ──► browser speech recognition ──► reference detector ─
                (Chrome / Edge / Safari)        scripture_refs.py     kjv.sqlite
 ```
 
-- **Speech recognition:** the browser's built-in service. Words arrive while you are still speaking, so a verse can be shown before you finish the sentence. Google (Chrome, Edge) or Apple (Safari) processes the audio.
+- **Speech recognition:** the browser's built-in service. Words arrive while you are still speaking, so a verse can be shown before you finish the sentence. The audio is processed by Google in Chrome, Microsoft in Edge, or Apple in Safari.
 - **`scripture_refs.py`** finds references in the transcript. It handles spoken numbers, "chapter"/"verse" wording, ranges, lists, ordinals, corrections and follow-ups. It is plain Python (standard library only) and runs inside the browser through [Pyodide](https://pyodide.org).
 - **The interface** is a [Next.js](https://nextjs.org) app styled with [Tailwind CSS](https://tailwindcss.com), exported as a static site, so it needs no server.
 - **`kjv.sqlite`** holds the 31,102 KJV verses, built by `build_kjv_db.py` from [thiagobodruk/bible](https://github.com/thiagobodruk/bible).
