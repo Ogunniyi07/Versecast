@@ -351,12 +351,14 @@ class KJV:
             return [(r, 0) for r in self.find(text)]
         return [(r, len(re.findall(r"[a-z0-9]+", t[e:]))) for r, _, e in self._core(t)]
 
-    def find_quote(self, text: str):
-        """The verse quoted in `text` without a reference, or None. The word
-        index is built on first use (about a second)."""
+    def find_quote(self, text: str, near=None):
+        """The verse quoted in `text` without a reference, or None. `near` is the
+        Reference on screen, which gives context. The word index is built on
+        first use (about a second)."""
         if getattr(self, "_quotes", None) is None:
             self._quotes = QuoteFinder(self.con)
-        hit = self._quotes.find(text)
+        ctx = (near.book, near.chapter, near.chapter_end) if near is not None else None
+        hit = self._quotes.find(text, ctx)
         if not hit:
             return None
         book, ch, v1, v2 = hit
@@ -580,17 +582,41 @@ QUOTE_MIN_WORDS = 5       # words matched in order
 QUOTE_MIN_CONTENT = 3     # of which not in QUOTE_STOP
 QUOTE_MIN_SCORE = 13.0    # summed rarity (IDF) of the matched words
 QUOTE_SKIP_COST = 1.5     # extra score needed per word skipped
-QUOTE_MIN_RUN_SCORE = 8.5 # the same, when the words are exactly the verse's, unbroken
+QUOTE_NEAR_WORDS = 4      # near the passage on screen: words matched ...
+QUOTE_NEAR_SCORE = 7.0    # ... and score needed
+QUOTE_MIN_RUN_SCORE = 8.0 # the same, when the words are exactly the verse's, unbroken
 QUOTE_GAP = 0.4          # cost of each word skipped inside a match
 QUOTE_SHORTLIST = 400     # verses considered per search ...
 QUOTE_ALIGN = 25          # ... of which this many are aligned word by word
 QUOTE_WINDOW = 40         # only the last N words heard are searched
 QUOTE_MARGIN = 1.25       # best verse must beat the runner-up by this factor
+QUOTE_CLOSE = 0.85        # ... and any tight runner-up scoring this close makes it ambiguous
+
+
+def _stem(w: str) -> str:
+    """Drop word endings so speech slips and KJV forms still match:
+    created/create, strengthens/strengtheneth, heavens/heaven."""
+    if w in QUOTE_STOP:
+        return w
+    for suf in ("eth", "est", "ing", "ed", "es", "s"):
+        if w.endswith(suf) and len(w) - len(suf) >= 3 and not (suf == "s" and w.endswith("ss")):
+            w = w[:-len(suf)]
+            break
+    if len(w) > 3 and w.endswith("e"):
+        w = w[:-1]
+    return w
 
 
 def _quote_words(text: str) -> list:
     words = re.findall(r"[a-z]+", text.lower().replace("'", ""))
-    return [QUOTE_EQUIV.get(w, w) for w in words]
+    return [_stem(QUOTE_EQUIV.get(w, w)) for w in words]
+
+
+def contains(outer, inner) -> bool:
+    """True if Reference `inner` lies within Reference `outer`."""
+    return (outer is not None and outer.book == inner.book
+            and (outer.chapter, outer.verse_start) <= (inner.chapter, inner.verse_start)
+            and (inner.chapter_end, inner.verse_end) <= (outer.chapter_end, outer.verse_end))
 
 
 class QuoteFinder:
@@ -615,6 +641,10 @@ class QuoteFinder:
         n = len(self.words)
         self.index = {w: array("H", ids) for w, ids in index.items()}
         self.idf = {w: math.log(n / len(ids)) for w, ids in index.items()}
+        self.chapter_rows = {}  # (book, chapter) -> first and last row
+        for i, (book, ch, _) in enumerate(self.rows):
+            first, _ = self.chapter_rows.get((book, ch), (i, i))
+            self.chapter_rows[(book, ch)] = (first, i)
 
     def _weight(self, w: str) -> float:
         return 0.3 if w in QUOTE_STOP else self.idf.get(w, 0.0)
@@ -671,9 +701,29 @@ class QuoteFinder:
         return unbroken and k == verse_len and k >= 2 and s >= QUOTE_MIN_RUN_SCORE
         # ^ a short verse said in full: "Jesus wept", "Pray without ceasing"
 
-    def find(self, text: str):
-        """(book, chapter, verse_start, verse_end) of the quoted verse(s), or None."""
+    def _near_rows(self, near) -> set:
+        """Rows of the passage on screen and its chapter(s), plus the next chapter:
+        where the preacher is most likely reading from."""
+        if near is None:
+            return set()
+        book, ch1, ch2 = near
+        rows = set()
+        for ch in range(ch1, ch2 + 2):
+            span = self.chapter_rows.get((book, ch))
+            if span:
+                rows.update(range(span[0], span[1] + 1))
+        return rows
+
+    def _good_near(self, a) -> bool:
+        s, k, c, *_ = a
+        return self._tight(a) and k >= QUOTE_NEAR_WORDS and c >= 2 and s >= QUOTE_NEAR_SCORE
+
+    def find(self, text: str, near=None):
+        """(book, chapter, verse_start, verse_end) of the quoted verse(s), or None.
+        `near` = (book, first_chapter, last_chapter) of the passage on screen:
+        verses there need a little less to match, and win ties."""
         q = _quote_words(text)[-QUOTE_WINDOW:]
+        near_rows = self._near_rows(near)
         content = sorted({w for w in q if w not in QUOTE_STOP and w in self.index},
                          key=lambda w: len(self.index[w]))
         if not content:
@@ -685,7 +735,7 @@ class QuoteFinder:
                 break  # too common to narrow anything down
             for i in self.index[w]:
                 votes[i] = votes.get(i, 0.0) + self.idf[w]
-        if not votes:
+        if not votes and not near_rows:
             return None
         # Shortlist, then re-rank by shared word pairs (cheap) before the full
         # alignment, so quotes made of common words still find their verse.
@@ -693,15 +743,24 @@ class QuoteFinder:
         shortlist = sorted(votes, key=votes.get, reverse=True)[:QUOTE_SHORTLIST]
         cands = sorted(shortlist, reverse=True, key=lambda i: (
             len(pairs.intersection(zip(self.words[i], self.words[i][1:]))), votes[i]))[:QUOTE_ALIGN]
+        if near_rows:  # verses on screen / nearby that share at least two key words
+            key = set(content)
+            near_rows = {i for i in near_rows if len(key.intersection(self.words[i])) >= 2}
+            cands = list(dict.fromkeys(cands + sorted(near_rows)))
         scored = sorted(((self._align(q, self.words[i]), i) for i in cands), reverse=True,
                         key=lambda x: (self._good(x[0], len(self.words[x[1]])), x[0][0]))
-        best, i = scored[0]
-        if not self._good(best, len(self.words[i])):
-            return None
-        for a, j in scored[1:]:
-            if (a[0] * QUOTE_MARGIN > best[0] and self._good(a, len(self.words[j]))
-                    and not self._neighbours(i, j)):
-                return None  # another verse fits about as well: ambiguous
+        hit = self._pick_near(scored, near_rows)
+        if hit is None:
+            best, i = scored[0]
+            if not self._good(best, len(self.words[i])):
+                return None
+            for a, j in scored[1:]:
+                close = (a[0] >= best[0] * QUOTE_CLOSE and self._tight(a)) or (
+                    a[0] * QUOTE_MARGIN > best[0] and self._good(a, len(self.words[j])))
+                if close and not self._neighbours(i, j):
+                    return None  # another verse fits about as well: ambiguous
+        else:
+            best, i = hit
         book, ch, v = self.rows[i]
         start = end = v
         # The quote runs on into the next verse(s), or began in the previous one:
@@ -717,8 +776,32 @@ class QuoteFinder:
                 j += step
         return book, ch, start, end
 
+    def _pick_near(self, scored, near_rows):
+        """The best match inside the passage on screen, if it is clear there and
+        nothing elsewhere is much better. Returns (alignment, row) or None."""
+        near = [(a, i) for a, i in scored if i in near_rows and self._good_near(a)]
+        if not near:
+            return None
+        near.sort(key=lambda x: x[0][0], reverse=True)
+        best, i = near[0]
+        for a, j in near[1:]:
+            if a[0] * QUOTE_MARGIN > best[0] and not self._neighbours(i, j):
+                return None  # "and God saw that it was good": several verses here
+        for a, j in scored:
+            if j not in near_rows and self._good(a, len(self.words[j])) and a[0] > best[0] * 1.5:
+                return None  # clearly a different passage
+        return best, i
+
     def _neighbours(self, i: int, j: int) -> bool:
         return abs(i - j) <= 2 and self.rows[i][:2] == self.rows[j][:2]
+
+
+def reconcile(refs: list, quote, last) -> list:
+    """Add a quoted verse to the references found in the same words, as the newest
+    one, unless one of them (or the passage on screen) already covers it."""
+    if quote is None or quote is last or any(contains(r, quote) for r in refs):
+        return refs
+    return refs + [quote]
 
 
 class Session:
@@ -731,10 +814,14 @@ class Session:
 
     def hear(self, text: str) -> list:
         refs = self.kjv.find(text)
-        if not refs:
-            quote = self.quote(text)
-            if quote is not None:
-                return [] if quote is self.last else [self._remember(quote)]
+        quote = self.quote(text)
+        if refs:
+            # The words read aloud beat a reference that doesn't cover them: the
+            # reference was probably misheard ("Genesis eleven" + Genesis 1:1 read).
+            # It stays in the list, so the operator can still pick it.
+            refs = reconcile(refs, quote, self.last)
+        elif quote is not None:
+            return [] if quote is self.last else [self._remember(quote)]
         if not refs and self.last is not None:
             refs = self._follow_up(text)
         if refs:
@@ -744,15 +831,10 @@ class Session:
     def quote(self, text: str):
         """The verse quoted in `text`, or None. A quote from the passage already
         on screen (the preacher reading it aloud) returns self.last unchanged."""
-        ref = self.kjv.find_quote(text)
+        ref = self.kjv.find_quote(text, self.last)
         if ref is None:
             return None
-        last = self.last
-        if (last is not None and last.book == ref.book
-                and (last.chapter, last.verse_start) <= (ref.chapter, ref.verse_start)
-                and (ref.chapter_end, ref.verse_end) <= (last.chapter_end, last.verse_end)):
-            return last
-        return ref
+        return self.last if contains(self.last, ref) else ref
 
     def _remember(self, ref):
         self.last = ref

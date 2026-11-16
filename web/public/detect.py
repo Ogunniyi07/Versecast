@@ -30,11 +30,13 @@ def _out(ref, words_after=0):
 
 def preview(text: str) -> str:
     found = _kjv.find_detailed(text)
-    if not found:
-        quote = _session.quote(text)
-        # Shown at once (after=1); a quote of what's already on screen: nothing.
-        if quote is not None and quote is not _session.last:
-            found = [(quote, 1)]
+    quote = _session.quote(text)
+    # A clear reading of a verse is shown at once (after=1), also when a
+    # (probably misheard) reference in the same words doesn't cover it. A reading
+    # of what's already on screen changes nothing.
+    refs = scripture_refs.reconcile([r for r, _ in found], quote, _session.last)
+    if len(refs) > len(found):
+        found = found + [(refs[-1], 1)]
     return json.dumps([_out(r, n) for r, n in found])
 
 

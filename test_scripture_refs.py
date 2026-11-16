@@ -233,5 +233,45 @@ class QuotationTests(unittest.TestCase):
         self.assertEqual([r.label() for r in s.hear("Romans 8:28, for God so loved the world")], ["Romans 8:28"])
 
 
+class LiveSermonTests(unittest.TestCase):
+    """What the preacher reads aloud corrects a missed or misheard reference."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kjv = KJV()
+
+    def screen(self, *said, start=None):
+        s = Session(self.kjv)
+        if start:
+            s.last = self.kjv.find(start)[-1]
+        for text in said:
+            s.hear(text)
+        return s.last.label() if s.last else None
+
+    def test_reading_overrides_a_misheard_reference(self):
+        self.assertEqual(self.screen("Genesis eleven in the beginning God created the heaven and the earth"), "Genesis 1:1")
+        self.assertEqual(self.screen("Genesis eleven", "in the beginning God created the heaven and the earth"), "Genesis 1:1")
+        self.assertEqual(self.screen("Jeremiah one one", "in the beginning God created the heaven and the earth"), "Genesis 1:1")
+
+    def test_misheard_reference_stays_in_the_list(self):
+        refs = Session(self.kjv).hear("Genesis eleven in the beginning God created the heaven and the earth")
+        self.assertEqual([r.label() for r in refs], ["Genesis 11:1-32", "Genesis 1:1"])
+
+    def test_missed_reference_and_speech_slips(self):
+        self.assertEqual(self.screen("in the beginning God create a heaven and earth"), "Genesis 1:1")
+
+    def test_screen_follows_the_reading(self):
+        # Alone, this is also Jeremiah 4:23; with Genesis 1:1 on screen it is Genesis 1:2.
+        self.assertIsNone(self.screen("and the earth was without form and void"))
+        self.assertEqual(self.screen("Genesis 1:1", "and the earth was without form and void"), "Genesis 1:2")
+
+    def test_reading_what_is_on_screen_changes_nothing(self):
+        self.assertEqual(self.screen("Genesis 1:1", "in the beginning God created the heaven and the earth"), "Genesis 1:1")
+        self.assertEqual(self.screen("Genesis 1", "and the earth was without form and void"), "Genesis 1:1-31")
+
+    def test_repeated_phrase_in_the_chapter_is_ignored(self):
+        self.assertEqual(self.screen("Genesis 1:3", "and God saw that it was good"), "Genesis 1:3")
+
+
 if __name__ == "__main__":
     unittest.main()
