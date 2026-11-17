@@ -95,6 +95,115 @@ NAMED_PASSAGES = [
     (r"\bthe first verse (?:of|in) the bible\b", "genesis 1:1"),
 ]
 
+# Bible stories by name ("David and Goliath", "the story of Joseph"): shown
+# from where the story starts. Specific episodes come before the person's
+# story in general ("Daniel in the lions' den" before "the story of Daniel").
+# Spellings speech recognition produces for the names are included.
+SHADRACH = r"(?:shadrach|shadrack|shadrak|shedrach|shedrack|shedrak|sadrach)"
+MESHACH = r"(?:meshach|meshack|meshak|mishach|mishak|mechash|meshac)"
+ABEDNEGO = r"(?:abednego|abed[- ]nego|abednigo|abenego|abednago|abed nigo)"
+STORY_EPISODES = [
+    # Genesis
+    (r"the creation story|the story of (?:the )?creation", "genesis 1"),
+    (r"the garden of eden", "genesis 2"),
+    (r"adam and eve|the fall of man", "genesis 3"),
+    (r"cain and abel", "genesis 4:1-16"),
+    (r"noah'?s ark|noah and the (?:ark|flood)|the great flood", "genesis 6"),
+    (r"the tower of babel", "genesis 11:1-9"),
+    (r"the call of abra(?:ha)?m", "genesis 12"),
+    (r"sodom and gomorr?ah", "genesis 19"),
+    (r"abraham and isaac|the sacrifice of isaac|abraham sacrific(?:ed|es|ing) isaac", "genesis 22:1-19"),
+    (r"jacob and esau", "genesis 25:19-34"),
+    (r"jacob'?s ladder", "genesis 28:10-22"),
+    (r"jacob wrestl(?:ed|es|ing) with (?:the angel|god|a man)", "genesis 32:22-32"),
+    (r"joseph and (?:his brothers|the coat of many colou?rs)|joseph'?s coat|coat of many colou?rs|joseph the dreamer", "genesis 37"),
+    (r"joseph and potiphar'?s? wife|potiphar'?s wife", "genesis 39"),
+    # Exodus to Ruth
+    (r"baby moses|moses in the (?:basket|bulrushes)|the birth of moses", "exodus 2:1-10"),
+    (r"the burning bush", "exodus 3"),
+    (r"the (?:ten )?plagues of egypt|the ten plagues", "exodus 7"),
+    (r"the passover story|the first passover", "exodus 12"),
+    (r"(?:the )?(?:parting|crossing|dividing) of the red sea|cross(?:ed|ing) the red sea|(?:part|parted|parting|divided) the red sea", "exodus 14"),
+    (r"manna from heaven", "exodus 16"),
+    (r"the golden calf", "exodus 32"),
+    (r"rahab and the spies", "joshua 2"),
+    (r"the (?:walls|battle|fall) of jericho", "joshua 6"),
+    (r"gideon'?s fleece|gideon and the fleece|gideon'?s army", "judges 6"),
+    (r"samson and delilah", "judges 16"),
+    (r"ruth and naomi", "ruth 1"),
+    # Samuel, Kings
+    (r"hannah'?s prayer", "1 samuel 1"),
+    (r"the call(?:ing)? of samuel", "1 samuel 3"),
+    (r"the anointing of david|david (?:was |is )?anointed", "1 samuel 16"),
+    (r"david and goliath", "1 samuel 17"),
+    (r"david and jonathan", "1 samuel 20"),
+    (r"david and bathsheba", "2 samuel 11"),
+    (r"solomon and the two (?:women|mothers|harlots)|solomon'?s (?:wisdom|judge?ment)|the wisdom of solomon", "1 kings 3:16-28"),
+    (r"elijah and the widow(?: of zarephath)?", "1 kings 17:8-24"),
+    (r"elijah (?:and the prophets of baal|on mount carmel)|the prophets of baal", "1 kings 18"),
+    (r"chariots? of fire|elijah (?:was )?taken up", "2 kings 2:1-14"),
+    (r"elisha and the shunamm?ite(?: woman)?", "2 kings 4:8-37"),
+    (r"naaman the leper|naaman (?:was )?healed", "2 kings 5"),
+    # Prophets
+    (r"the valley of dry bones|the dry bones", "ezekiel 37:1-14"),
+    (r"nebuchadnezzar'?s dream", "daniel 2"),
+    (rf"{SHADRACH}|{MESHACH}|{ABEDNEGO}|the fiery furnace|the three hebrew (?:boys|men|children)", "daniel 3"),
+    (r"the (?:hand)?writing on the wall|belshazzar'?s feast", "daniel 5"),
+    (r"daniel in the lions'? den|daniel and the lions|the lions'? den|the lion'?s den", "daniel 6"),
+    (r"jonah and the (?:whale|big fish|great fish|fish)", "jonah 1"),
+    # Gospels
+    (r"the christmas story|the nativity(?: story)?|the birth of (?:jesus|christ)", "luke 2:1-20"),
+    (r"the three wise men|the wise men from the east|the magi", "matthew 2:1-12"),
+    (r"the baptism of jesus|jesus'?s? baptism|jesus (?:was )?baptized", "matthew 3:13-17"),
+    (r"the temptation of (?:jesus|christ)|jesus (?:was )?tempted", "matthew 4:1-11"),
+    (r"the sermon on the mount", "matthew 5"),
+    (r"(?:turn(?:ed|ing|s)? )?water into wine|the wedding (?:at|in) cana", "john 2:1-11"),
+    (r"jesus and nicodemus|the story of nicodemus", "john 3:1-21"),
+    (r"the woman at the well|the samaritan woman", "john 4:1-42"),
+    (r"(?:the )?feeding of the (?:five thousand|5,?000)|five loaves and two fish(?:es)?|5 loaves and 2 fish(?:es)?", "john 6:1-14"),
+    (r"(?:jesus|peter) walk(?:ed|s|ing)? on (?:the )?water|walking on water", "matthew 14:22-33"),
+    (r"jesus calm(?:ed|s|ing)? the storm|the calming of the storm", "mark 4:35-41"),
+    (r"the (?:parable of the )?good samaritan", "luke 10:25-37"),
+    (r"the (?:parable of the )?prodigal son", "luke 15:11-32"),
+    (r"the parable of the lost sheep", "luke 15:3-7"),
+    (r"the parable of the sower", "matthew 13:1-23"),
+    (r"the parable of the talents", "matthew 25:14-30"),
+    (r"the (?:parable of the )?(?:ten|wise and foolish) virgins", "matthew 25:1-13"),
+    (r"the rich man and lazarus", "luke 16:19-31"),
+    (r"the raising of lazarus|jesus raised lazarus|lazarus,? come forth", "john 11:1-44"),
+    (r"(?:blind )?bartimaeus|(?:blind )?bartimeus", "mark 10:46-52"),
+    (r"zacch?a?e?us|zach?eus|zakeus", "luke 19:1-10"),
+    (r"the last supper", "matthew 26:17-30"),
+    (r"the garden of gethsemane|gethsemane", "matthew 26:36-46"),
+    (r"the crucifixion of (?:jesus|christ)|the (?:story of the )?crucifixion story|the story of the crucifixion", "luke 23:26-49"),
+    (r"the empty tomb|the resurrection story|the story of the resurrection", "matthew 28:1-10"),
+    (r"the road to emmaus", "luke 24:13-35"),
+    (r"doubting thomas", "john 20:24-29"),
+    # Acts
+    (r"the day of pentecost|the pentecost story", "acts 2"),
+    (r"ananias and sapphira", "acts 5:1-11"),
+    (r"the stoning of stephen|stephen (?:was )?stoned", "acts 7:54-60"),
+    (r"philip and the ethiopian(?: eunuch)?", "acts 8:26-40"),
+    (r"(?:saul|paul)'?s conversion|the conversion of (?:saul|paul)|the (?:road to damascus|damascus road)", "acts 9:1-19"),
+    (r"paul and silas(?: in prison)?", "acts 16:16-40"),
+    (r"the fruit of the spirit", "galatians 5:22-23"),
+]
+# "The story of X", "X's story", "the life of X": where X's story begins.
+STORY_PEOPLE = [
+    ("abraham", "genesis 12"), ("jacob", "genesis 25:19-34"), ("joseph", "genesis 37"),
+    ("noah", "genesis 6"), ("moses", "exodus 2"), ("joshua", "joshua 1"), ("gideon", "judges 6"),
+    ("samson", "judges 13"), ("ruth", "ruth 1"), ("hannah", "1 samuel 1"), ("samuel", "1 samuel 1"),
+    ("david", "1 samuel 16"), ("solomon", "1 kings 3"), ("elijah", "1 kings 17"), ("elisha", "2 kings 2"),
+    ("nehemiah", "nehemiah 1"), ("esther", "esther 1"), ("job", "job 1"), ("daniel", "daniel 1"),
+    ("jonah", "jonah 1"), ("lazarus", "john 11:1-44"), ("nicodemus", "john 3:1-21"),
+]
+_STORY_OF = r"(?:the )?(?:bible )?(?:story|life) of (?:the )?(?:prophet |king |queen )?"
+# Not when numbers follow ("the story of Daniel chapter 3"): the spoken reference wins.
+_NO_NUMBER = r"(?!,?\s+(?:chapter|chapters|verse|verses|\d|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b)"
+NAMED_PASSAGES += [(rf"\b(?:{p}){_NO_NUMBER}", ref) for p, ref in STORY_EPISODES]
+NAMED_PASSAGES += [(rf"\b(?:{_STORY_OF}{name}\b|{name}'?s? (?:life )?story\b){_NO_NUMBER}", ref)
+                   for name, ref in STORY_PEOPLE]
+
 FILLERS = re.compile(r"\b(?:uh+|um+|erm|er|ah+|hmm+|eh)\b[,.]*")
 # Words that mean "ignore the reference I just said".
 CORRECTION = re.compile(r"\b(?:sorry|i mean|i meant|actually|correction|rather|no)\b")
@@ -364,6 +473,17 @@ class KJV:
         book, ch, v1, v2 = hit
         return Reference(book, ch, v1, ch, v2, text.strip())
 
+    def find_story(self, text: str):
+        """The chapter whose story is being retold in `text`, as a Reference, or None."""
+        if getattr(self, "_stories", None) is None:
+            self.find_quote("")  # builds the shared word index
+            self._stories = StoryFinder(self._quotes, self.con)
+        hit = self._stories.find(text)
+        if not hit:
+            return None
+        book, ch = hit
+        return Reference(book, ch, 1, ch, self.books[book][ch], text.strip())
+
     def is_whole_chapter(self, ref: Reference) -> bool:
         chapters = self.books[ref.book]
         return len(chapters) > 1 and ref.verse_start == 1 and ref.verse_end == chapters[ref.chapter_end]
@@ -570,7 +690,7 @@ QUOTE_EQUIV = {
     "thee": "you", "thou": "you", "ye": "you", "thy": "your", "thine": "your",
     "hath": "has", "doth": "does", "saith": "says", "shalt": "shall", "wilt": "will",
     "art": "are", "unto": "to", "upon": "on", "hast": "have", "didst": "did",
-    "which": "that", "who": "that", "whom": "that",
+    "which": "that", "who": "that", "whom": "that", "sycamore": "sycomore",
 }
 # Very common words: matched for the order check, but worth almost nothing.
 QUOTE_STOP = frozenset("""
@@ -584,6 +704,9 @@ QUOTE_MIN_SCORE = 13.0    # summed rarity (IDF) of the matched words
 QUOTE_SKIP_COST = 1.5     # extra score needed per word skipped
 QUOTE_NEAR_WORDS = 4      # near the passage on screen: words matched ...
 QUOTE_NEAR_SCORE = 7.0    # ... and score needed
+QUOTE_MOVE_COVERAGE = 0.3 # moving to another verse of the chapter on screen needs this share of
+                          # that verse ("and the earth was without form and void"), not a phrase
+                          # from a retelling ("the den of lions ... the king")
 QUOTE_MIN_RUN_SCORE = 8.0 # the same, when the words are exactly the verse's, unbroken
 QUOTE_GAP = 0.4          # cost of each word skipped inside a match
 QUOTE_SHORTLIST = 400     # verses considered per search ...
@@ -607,9 +730,19 @@ def _stem(w: str) -> str:
     return w
 
 
+class _WordForms(dict):
+    """Spoken/KJV word -> its matching form, worked out once per distinct word."""
+    def __missing__(self, w):
+        f = self[w] = _stem(QUOTE_EQUIV.get(w, w))
+        return f
+
+
+_WORD_FORMS = _WordForms()
+
+
 def _quote_words(text: str) -> list:
-    words = re.findall(r"[a-z]+", text.lower().replace("'", ""))
-    return [_stem(QUOTE_EQUIV.get(w, w)) for w in words]
+    forms = _WORD_FORMS
+    return [forms[w] for w in re.findall(r"[a-z]+", text.lower().replace("'", ""))]
 
 
 def contains(outer, inner) -> bool:
@@ -763,6 +896,7 @@ class QuoteFinder:
             best, i = hit
         book, ch, v = self.rows[i]
         start = end = v
+        self.coverage = best[1] / max(1, len(self.words[i])) 
         # The quote runs on into the next verse(s), or began in the previous one:
         # only words the best verse did not already account for count.
         for step, part in ((1, q[best[4] + 1:]), (-1, q[:best[3]])):
@@ -796,6 +930,114 @@ class QuoteFinder:
         return abs(i - j) <= 2 and self.rows[i][:2] == self.rows[j][:2]
 
 
+# Retellings
+STORY_MAX_DF = 150       # a word counts only if it is in at most this many chapters (of 1,189)
+STORY_MIN_WORDS = 3      # distinctive words from the same chapter ...
+STORY_MIN_SCORE = 16.0   # ... adding up to at least this much
+STORY_MARGIN = 1.3       # and the chapter must beat every other chapter (with 2+ such words) by this factor
+STORY_WINDOW = 80        # words of recent speech considered
+# Without a biblical name (Darius, Gath, Nineveh) the evidence must be tighter:
+# a retelling packs the story's words close together ("an ark of gopher wood ...
+# a flood"), while sermon imagery spreads them over several sentences.
+STORY_NO_NAME_WORDS = 4  # rare words from the chapter ...
+STORY_NO_NAME_SPAN = 25  # ... within this many words of each other,
+STORY_SIGNATURE_DF = 10  # ... one of them a signature word, in at most this many chapters (gopher, husks)
+STORY_KNOWN_BONUS = 1.15 # chapters where a well-known story starts
+# Chapters that retell a story told earlier: counted as the original.
+STORY_RETOLD = {("Acts", 22): ("Acts", 9), ("Acts", 26): ("Acts", 9)}
+# Rare in the KJV but common in sermons: no evidence of any one story.
+STORY_IGNORE = frozenset(_stem(w) for w in """
+amen hallelujah alleluia praise church pastor brethren beloved saints congregation
+""".split())
+
+
+class StoryFinder:
+    """Recognises a Bible story told in the preacher's own words ("Darius couldn't
+    sleep, worried about Daniel and the lions") from distinctive words that come
+    from the same chapter: names, places and rare words. Uses only the KJV text,
+    so it covers every chapter."""
+
+    def __init__(self, quotes: "QuoteFinder", con):
+        self.chapters = []          # (book, chapter)
+        tf = {}                     # word -> {chapter id: count}
+        cid = {}
+        for (book, ch, _), words in zip(quotes.rows, quotes.words):
+            key = (book, ch)
+            if key not in cid:
+                cid[key] = len(self.chapters)
+                self.chapters.append(key)
+            c = cid[key]
+            for w in words:
+                if w in QUOTE_STOP:
+                    continue
+                d = tf.setdefault(w, {})
+                d[c] = d.get(c, 0) + 1
+        n = len(self.chapters)
+        self.postings = {w: d for w, d in tf.items() if len(d) <= STORY_MAX_DF and w not in STORY_IGNORE}
+        self.alias = {cid[a]: cid[b] for a, b in STORY_RETOLD.items()}
+        # Names: words the KJV capitalises (almost) everywhere, sentence starts aside.
+        cap, total = {}, {}
+        for (text,) in con.execute("SELECT text FROM verses"):
+            for m in re.finditer(r"(?<![.?!:;] )(?<!^)\b([A-Za-z]+)\b", text):
+                w = m[1].lower()
+                total[w] = total.get(w, 0) + 1
+                if m[1][0].isupper():
+                    cap[w] = cap.get(w, 0) + 1
+        self.names = {_WORD_FORMS[w] for w, n in total.items() if cap.get(w, 0) >= 0.9 * n}
+        known = {(m[1], int(m[2])) for _, ref in STORY_EPISODES + STORY_PEOPLE
+                 for m in [re.match(r"((?:\d )?[a-z ]+?) (\d+)", ref)]}
+        self.bonus = {i: STORY_KNOWN_BONUS for i, (book, ch) in enumerate(self.chapters)
+                      if (book.lower(), ch) in known}
+        self.idf = {w: math.log(n / len(d)) for w, d in self.postings.items()}
+
+    def find(self, text: str):
+        """(book, chapter) of the story being told, or None."""
+        heard = _quote_words(text)[-STORY_WINDOW:]
+        words = {w for w in heard if w not in QUOTE_STOP}
+        score, hits, named = {}, {}, {}
+        for w in words:
+            seen = set()
+            for c, count in self.postings.get(w, {}).items():
+                c = self.alias.get(c, c)
+                if c in seen:
+                    continue
+                seen.add(c)
+                score[c] = score.get(c, 0.0) + self.idf[w] * min(1 + math.log(count), 2.5)
+                hits[c] = hits.get(c, 0) + 1
+                if w in self.names:
+                    named[c] = True
+        if not score:
+            return None
+        for c in score:
+            score[c] *= self.bonus.get(c, 1.0)
+        ranked = sorted(score, key=score.get, reverse=True)
+        best = ranked[0]
+        if hits[best] < STORY_MIN_WORDS or score[best] < STORY_MIN_SCORE:
+            return None
+        if not named.get(best) and not self._dense(heard, best):
+            return None
+        for c in ranked[1:]:
+            if score[c] * STORY_MARGIN <= score[best]:
+                break
+            if hits[c] >= 2:
+                return None  # another chapter fits nearly as well
+        return self.chapters[best]
+
+    def _dense(self, heard: list, c: int) -> bool:
+        """STORY_NO_NAME_WORDS different words of chapter c within STORY_NO_NAME_SPAN words."""
+        first = {}
+        for i, w in enumerate(heard):
+            if w not in first and w not in QUOTE_STOP:
+                d = self.postings.get(w)
+                if d and any(self.alias.get(x, x) == c for x in d):
+                    first[w] = i
+        if not any(len(self.postings[w]) <= STORY_SIGNATURE_DF for w in first):
+            return False
+        pos = sorted(first.values())
+        n = STORY_NO_NAME_WORDS
+        return any(pos[j + n - 1] - pos[j] < STORY_NO_NAME_SPAN for j in range(len(pos) - n + 1))
+
+
 def reconcile(refs: list, quote, last) -> list:
     """Add a quoted verse to the references found in the same words, as the newest
     one, unless one of them (or the passage on screen) already covers it."""
@@ -811,6 +1053,8 @@ class Session:
     def __init__(self, kjv: KJV):
         self.kjv = kjv
         self.last = None  # last Reference put on screen
+        self._story_text = []     # sentences heard since the screen last changed
+        self._story_for = None    # ... i.e. since self.last became this
 
     def hear(self, text: str) -> list:
         refs = self.kjv.find(text)
@@ -821,12 +1065,36 @@ class Session:
             # It stays in the list, so the operator can still pick it.
             refs = reconcile(refs, quote, self.last)
         elif quote is not None:
-            return [] if quote is self.last else [self._remember(quote)]
+            if quote is self.last:
+                self.story(text)  # keep the retelling's sentences, but leave the screen as it is
+                return []
+            # A loose quote inside a story being retold: show the story's chapter.
+            story = self.story(text) if self.kjv._quotes.coverage < QUOTE_MOVE_COVERAGE else None
+            if story is not None and (story.book, story.chapter) == (quote.book, quote.chapter):
+                quote = story
+            return [self._remember(quote)]
         if not refs and self.last is not None:
             refs = self._follow_up(text)
+        if not refs:
+            story = self.story(text)
+            if story is not None:
+                refs = [story]
         if refs:
             self.last = refs[-1]
         return refs
+
+    def story(self, text: str):
+        """A Bible story retold in the preacher's own words over the last few
+        sentences, or None. Nothing if it is the chapter already on screen."""
+        if self.last is not self._story_for:  # the screen changed: start afresh
+            self._story_text, self._story_for = [], self.last
+        self._story_text.append(text)
+        ref = self.kjv.find_story(" ".join(self._story_text))
+        last = self.last
+        if ref is None or (last is not None and last.book == ref.book
+                           and last.chapter <= ref.chapter <= last.chapter_end):
+            return None
+        return ref
 
     def quote(self, text: str):
         """The verse quoted in `text`, or None. A quote from the passage already
@@ -834,7 +1102,17 @@ class Session:
         ref = self.kjv.find_quote(text, self.last)
         if ref is None:
             return None
-        return self.last if contains(self.last, ref) else ref
+        last = self.last
+        if contains(last, ref):
+            return last
+        reading_on = (last is not None and ref.book == last.book and ref.chapter == last.chapter_end
+                      and last.verse_end < ref.verse_start <= last.verse_end + 2) or (
+                      last is not None and ref.book == last.book and ref.chapter == last.chapter
+                      and last.verse_start - 2 <= ref.verse_end < last.verse_start)
+        if (last is not None and ref.book == last.book and last.chapter <= ref.chapter <= last.chapter_end
+                and self.kjv._quotes.coverage < QUOTE_MOVE_COVERAGE and not reading_on):
+            return None  # a phrase of the chapter on screen, not a reading of another verse
+        return ref
 
     def _remember(self, ref):
         self.last = ref

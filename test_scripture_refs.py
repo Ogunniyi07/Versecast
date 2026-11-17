@@ -273,5 +273,101 @@ class LiveSermonTests(unittest.TestCase):
         self.assertEqual(self.screen("Genesis 1:3", "and God saw that it was good"), "Genesis 1:3")
 
 
+class BibleStoryTests(unittest.TestCase):
+    """A story mentioned by name opens where it starts in the Bible."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kjv = KJV()
+
+    def labels(self, text):
+        return [r.label() for r in self.kjv.find(text)]
+
+    def test_stories_by_name(self):
+        for text, want in [
+            ("David and Goliath", "1 Samuel 17:1-58"),
+            ("Jonah and the whale", "Jonah 1:1-17"),
+            ("Noah's ark", "Genesis 6:1-22"),
+            ("the prodigal son", "Luke 15:11-32"),
+            ("the walls of Jericho", "Joshua 6:1-27"),
+        ]:
+            self.assertEqual(self.labels(text), [want], text)
+
+    def test_story_of_a_person(self):
+        self.assertEqual(self.labels("The story of Daniel in the Bible"), ["Daniel 1:1-21"])
+        self.assertEqual(self.labels("Joseph's story"), ["Genesis 37:1-36"])
+        self.assertEqual(self.labels("joseph story"), ["Genesis 37:1-36"])
+
+    def test_specific_episode_wins_over_the_person(self):
+        self.assertEqual(self.labels("the story of Daniel in the lions den"), ["Daniel 6:1-28"])
+
+    def test_misheard_names(self):
+        self.assertEqual(self.labels("Shadrach, Meshach and Abednego"), ["Daniel 3:1-30"])
+        self.assertEqual(self.labels("Shedrach, mechash and abenego story"), ["Daniel 3:1-30"])
+
+    def test_spoken_numbers_win(self):
+        self.assertEqual(self.labels("the story of Daniel chapter 3"), ["Daniel 3:1-30"])
+
+    def test_names_alone_are_not_stories(self):
+        self.assertEqual(self.labels("my friend Daniel is here today"), [])
+        self.assertEqual(self.labels("Joseph will lead the prayer"), [])
+
+
+
+class RetellingTests(unittest.TestCase):
+    """A story told in the preacher's own words, without naming it."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kjv = KJV()
+
+    def story(self, text):
+        r = self.kjv.find_story(text)
+        return f"{r.book} {r.chapter}" if r else None
+
+    def test_retellings_with_names(self):
+        self.assertEqual(self.story("king Darius could not sleep all night because Daniel was in the den of lions "
+                                    "and in the morning he ran to the den and the lions had not touched him"), "Daniel 6")
+        self.assertEqual(self.story("the giant from Gath came out every day and defied the armies of Israel until a "
+                                    "shepherd boy picked five smooth stones and put one in his sling"), "1 Samuel 17")
+        self.assertEqual(self.story("God told him to go to Nineveh but he ran the other way and got on a ship to "
+                                    "Tarshish and there was a great storm"), "Jonah 1")
+
+    def test_retellings_without_names(self):
+        self.assertEqual(self.story("the younger son asked his father for his share of the inheritance and wasted it "
+                                    "all in riotous living until he was feeding swine and wished he could eat the husks"), "Luke 15")
+        self.assertEqual(self.story("God told him to build an ark of gopher wood and bring the animals two by two "
+                                    "because he would send a flood upon the earth"), "Genesis 6")
+
+    def test_story_told_twice_shows_the_original(self):
+        self.assertEqual(self.story("Saul was on his way to Damascus to arrest the believers when a light from heaven "
+                                    "shone around him and he heard a voice saying why do you persecute me"), "Acts 9")
+
+    def test_sermon_imagery_is_not_a_retelling(self):
+        for text in [
+            "when the storm is raging and the waves are high and your boat is filling with water remember that "
+            "He is in the boat with you He can speak peace to your storm",
+            "watch the Lord multiply it like the loaves and the fish The wilderness is not your final destination "
+            "God fed his people with manna in the wilderness and water from the rock",
+            "Plead the blood over your family and your business this week Do not be like the foolish man who "
+            "built his house on the sand Build on the rock",
+            "every giant in your life must fall in the name of Jesus you do not need armour you need the anointing",
+        ]:
+            self.assertIsNone(self.story(text), text)
+
+    def test_retelling_across_sentences(self):
+        s = Session(self.kjv)
+        self.assertEqual(s.hear("king Darius was so worried he fasted and nobody could comfort him"), [])
+        refs = s.hear("because Daniel was in the den of lions and the king ran to the den in the morning")
+        self.assertEqual([r.label() for r in refs], ["Daniel 6:1-28"])
+
+    def test_retelling_of_the_chapter_on_screen_changes_nothing(self):
+        s = Session(self.kjv)
+        s.hear("Daniel 6:16")
+        s.hear("king Darius was so worried he fasted and nobody could comfort him")
+        self.assertEqual(s.hear("because Daniel was in the den of lions and the king ran to the den"), [])
+        self.assertEqual(s.last.label(), "Daniel 6:16")
+
+
 if __name__ == "__main__":
     unittest.main()
