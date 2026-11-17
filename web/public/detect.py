@@ -15,7 +15,7 @@ import scripture_refs
 
 _kjv = scripture_refs.KJV()
 _session = scripture_refs.Session(_kjv)
-_kjv.find_quote("")  # build the quote index now, while the page is loading
+_kjv.find_story("")  # build the quote and story indexes now, while the page is loading
 
 
 def _out(ref, words_after=0):
