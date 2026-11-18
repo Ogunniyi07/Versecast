@@ -30,7 +30,7 @@ def _out(ref, words_after=0):
 
 def preview(text: str) -> str:
     found = _kjv.find_detailed(text)
-    quote = _session.quote(text)
+    quote = _session.quote_heard(text)
     # A clear reading of a verse is shown at once (after=1), also when a
     # (probably misheard) reference in the same words doesn't cover it. A reading
     # of what's already on screen changes nothing.

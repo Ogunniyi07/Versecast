@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { accentLabel, DEFAULT_ACCENT, FALLBACK_ACCENT } from "./accents";
 import { loadDetector, type Detector, type Ref } from "./detector";
 import { track } from "./analytics";
+import { type Entry, loadTranscript, saveTranscript, verseEntry } from "./transcript";
 
 const HISTORY_MAX = 9;
 const WAIT_VERSE_MS = 350;
@@ -39,6 +40,10 @@ export function useVerseCast() {
   const [accent, setAccentState] = useState(DEFAULT_ACCENT);
   const accentRef = useRef(DEFAULT_ACCENT);
   const [typedMiss, setTypedMiss] = useState(false);
+  const [transcript, setTranscript] = useState<Entry[]>([]);
+  const transcriptRef = useRef<Entry[]>([]);
+  const pendingVerses = useRef<Entry[]>([]); 
+  const pendingInterim = useRef("");
 
   const detector = useRef<Detector | null>(null);
   const rec = useRef<SpeechRecognitionLike>(null);
@@ -51,8 +56,35 @@ export function useVerseCast() {
   const lastCounted = useRef(""); // so a verse previewed then committed counts once
   shownRef.current = shown;
 
+  // transcript
+  const addEntries = useCallback((...entries: Entry[]) => {
+    if (!entries.length) return;
+    const next = transcriptRef.current.concat(entries);
+    transcriptRef.current = next;
+    setTranscript(next);
+    saveTranscript(next);
+  }, []);
+
+  // A finished sentence, followed by any verse it put on screen.
+  const addSpeech = useCallback((text: string) => {
+    const t = Date.now();
+    const pending = pendingVerses.current.map((e) => ({ ...e, t }));
+    pendingVerses.current = [];
+    addEntries(...(text.trim() ? [{ t, kind: "speech" as const, text: text.trim() }] : []), ...pending);
+  }, [addEntries]);
+
+  const clearTranscript = useCallback(() => {
+    transcriptRef.current = [];
+    pendingVerses.current = [];
+    setTranscript([]);
+    saveTranscript([]);
+  }, []);
+
   // loading
   useEffect(() => {
+    const saved = loadTranscript();
+    transcriptRef.current = saved;
+    setTranscript(saved);
     try {
       const saved = localStorage.getItem("vb-accent");
       if (saved) { accentRef.current = saved; setAccentState(saved); }
@@ -96,8 +128,11 @@ export function useVerseCast() {
     if (newest !== lastCounted.current) {
       lastCounted.current = newest;
       track(mode === "typed" ? "verse-shown-typed" : "verse-shown-spoken");
+      const entry = verseEntry(refs[refs.length - 1]);
+      if (mode === "spoken") pendingVerses.current.push(entry);
+      else addEntries(entry);
     }
-  }, []);
+  }, [addEntries]);
 
   const onSpeech = useCallback((text: string, final: boolean) => {
     clearTimeout(waitTimer.current);
@@ -116,6 +151,18 @@ export function useVerseCast() {
     waitTimer.current = setTimeout(() => present(refs, text, "spoken"),
       last.whole ? WAIT_CHAPTER_MS : WAIT_VERSE_MS);
   }, [present]);
+
+  // A sentence from the speech service: finished, or still being spoken.
+  const heard = useCallback((text: string, final: boolean) => {
+    if (final) {
+      pendingInterim.current = "";
+      onSpeech(text, true);
+      addSpeech(text);
+    } else if (text.trim()) {
+      pendingInterim.current = text.trim();
+      onSpeech(text, false);
+    }
+  }, [onSpeech, addSpeech]);
 
   //listening
   const stop = useCallback(() => {
@@ -146,13 +193,13 @@ export function useVerseCast() {
             if (detector.current?.preview(res[j].transcript).length) { best = res[j].transcript; break; }
           }
           finals += best;
-          onSpeech(best, true);
+          heard(best, true);
         } else {
           interim += res[0].transcript;
         }
       }
       setHearing({ final: finals.trim(), interim: interim.trim() });
-      if (interim.trim()) onSpeech(interim, false);
+      heard(interim, false);
     };
     r.onerror = (e: any) => {
       if (e.error === "no-speech" || e.error === "aborted") return;
@@ -176,8 +223,15 @@ export function useVerseCast() {
     };
     // Browsers end recognition after a pause; keep listening until Stop.
     r.onend = () => {
+      const unfinished = pendingInterim.current;
+      pendingInterim.current = "";
+      if (unfinished) heard(unfinished, true);
       if (listeningRef.current && rec.current === r) {
         try { r.start(); } catch { /* restarting too fast */ }
+      } else if (!listeningRef.current) {
+        addSpeech(""); // a verse shown mid-sentence
+        setHearing({ final: "", interim: "" });
+        addEntries({ t: Date.now(), kind: "stop" });
       }
     };
     rec.current = r;
@@ -186,6 +240,8 @@ export function useVerseCast() {
     setNotice(null);
     setHearing({ final: "", interim: "" });
     setListening(true);
+    pendingInterim.current = "";
+    addEntries({ t: Date.now(), kind: "start" });
     track(`listen-start-${accentRef.current}`);
     try {
       r.start();
@@ -193,7 +249,7 @@ export function useVerseCast() {
       stop();
       setNotice(`Couldn't start listening: ${e.message || e}`);
     }
-  }, [onSpeech, stop]);
+  }, [heard, stop, addSpeech, addEntries]);
 
   const toggleListening = useCallback(() => (listeningRef.current ? stop() : start()), [start, stop]);
 
@@ -228,13 +284,33 @@ export function useVerseCast() {
   }, [present]);
 
   // The operator picked a reference: show it, and make follow-ups relative to it.
-  const pick = useCallback((index: number) => {
+  const pick = useCallback((index: number, record = true) => {
     const ref = historyRef.current[index];
     if (!ref) return;
     setShown(index);
     setHidden(false);
     detector.current?.focus(ref.label);
-  }, []);
+    if (record) addEntries(verseEntry(ref));
+  }, [addEntries]);
+
+  // A verse pill in the transcript was clicked: show that verse again (back in
+  // "Recent" if it dropped out). Not written to the transcript a second time.
+  const showVerse = useCallback((label: string) => {
+    track("transcript-verse-click");
+    const index = historyRef.current.findIndex((h) => h.label === label);
+    if (index >= 0) return pick(index, false);
+    const d = detector.current;
+    const ref = d?.preview(label).find((r) => r.label === label);
+    if (!d || !ref) return;
+    const next = historyRef.current.concat([ref]).slice(-HISTORY_MAX);
+    historyRef.current = next;
+    utterRefs.current = [];
+    setHistory(next);
+    setShown(next.length - 1);
+    setHidden(false);
+    setTypedMiss(false);
+    d.focus(label);
+  }, [pick]);
 
   const toggleHidden = useCallback(() => setHidden((h) => !h), []);
 
@@ -260,12 +336,14 @@ export function useVerseCast() {
     setShown(index);
     setHidden(false);
     setTake({ text: dir > 0 ? "Next verse" : "Previous verse", mode: "arrows" });
-  }, []);
+    addEntries(verseEntry(next));
+  }, [addEntries]);
 
   return {
     status, statusNote, listening, hearing, history, shown, hidden, take, notice, typedMiss,
     toggleListening, check, pick, toggleHidden, step, accent, setAccent,
+    transcript, clearTranscript, showVerse,
     current: shown >= 0 ? history[shown] : null,
-    onSpeech, // exposed for automated tests
+    onSpeech: heard, // exposed for automated tests
   };
 }

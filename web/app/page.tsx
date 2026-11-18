@@ -84,6 +84,10 @@ export default function Home() {
         onToggle={vc.toggleListening}
         accent={vc.accent}
         onAccent={vc.setAccent}
+        transcript={vc.transcript}
+        onClearTranscript={vc.clearTranscript}
+        onShowVerse={vc.showVerse}
+        current={vc.hidden ? null : vc.current?.label ?? null}
       />
 
       <TypeForm disabled={vc.status === "loading" || vc.status === "error"} onCheck={vc.check} />

@@ -1,5 +1,7 @@
 import { ACCENTS } from "@/lib/accents";
 import type { Status } from "@/lib/useVerseCast";
+import type { Entry } from "@/lib/transcript";
+import { Transcript } from "./Transcript";
 
 type Props = {
   status: Status;
@@ -10,9 +12,13 @@ type Props = {
   onToggle: () => void;
   accent: string;
   onAccent: (code: string) => void;
+  transcript: Entry[];
+  onClearTranscript: () => void;
+  onShowVerse: (label: string) => void;
+  current: string | null; // label on screen
 };
 
-export function MicPanel({ status, statusNote, listening, hearing, notice, onToggle, accent, onAccent }: Props) {
+export function MicPanel({ status, statusNote, listening, hearing, notice, onToggle, accent, onAccent, transcript, onClearTranscript, onShowVerse, current }: Props) {
   const ready = status === "ready";
   const label =
     status === "loading" ? statusNote
@@ -75,13 +81,8 @@ export function MicPanel({ status, statusNote, listening, hearing, notice, onTog
           </label>
         )}
       </div>
-      {listening && (
-        <p className="min-h-[1.5em] rounded-xl bg-slate-50 px-4 py-3 text-navy" aria-live="polite">
-          <span className="mr-2 text-xs font-bold uppercase tracking-wider text-muted">Hearing</span>
-          {hearing.final} <span className="text-muted">{hearing.interim}</span>
-          {!hearing.final && !hearing.interim && <span className="text-muted">…</span>}
-        </p>
-      )}
+      <Transcript entries={transcript} interim={hearing.interim} listening={listening} onClear={onClearTranscript}
+        onShowVerse={onShowVerse} current={current} />
       {notice && <p className="rounded-xl bg-orange-50 px-4 py-3 text-sm text-brand-dark" role="alert">{notice}</p>}
     </section>
   );
