@@ -273,6 +273,34 @@ class LiveSermonTests(unittest.TestCase):
         self.assertEqual(self.screen("Genesis 1:3", "and God saw that it was good"), "Genesis 1:3")
 
 
+class PausedQuoteTests(unittest.TestCase):
+    """A quote said in pieces, with pauses between them, still adds up."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kjv = KJV()
+
+    def shown(self, *said, gap=4):
+        s = Session(self.kjv)
+        return [[r.label() for r in s.hear(text, now=100 + i * gap)] for i, text in enumerate(said)]
+
+    def test_pieces_add_up(self):
+        self.assertEqual(self.shown("eyes have not seen", "nor ears heard"), [[], ["1 Corinthians 2:9"]])
+        self.assertEqual(self.shown("eyes have not seen", "neither has ears heard",
+                                    "neither has it entered into the heart of man")[-1], ["1 Corinthians 2:9"])
+
+    def test_a_long_pause_starts_afresh(self):
+        self.assertEqual(self.shown("eyes have not seen", "nor ears heard", gap=20), [[], []])
+
+    def test_finished_quote_is_not_shown_twice(self):
+        self.assertEqual(self.shown("for God so loved the world", "that he gave his only begotten son"),
+                         [["John 3:16"], []])
+
+    def test_ordinary_sentences_stay_quiet(self):
+        self.assertEqual(self.shown("we thank God for this service", "and we are all here today",
+                                    "so please greet your neighbour"), [[], [], []])
+
+
 class BibleStoryTests(unittest.TestCase):
     """A story mentioned by name opens where it starts in the Bible."""
 

@@ -14,6 +14,7 @@ KJV, then matches book + numbers. Session adds memory for follow-ups
 ("next verse", "verse seventeen").
 """
 import math
+import time
 import re
 import sqlite3
 from array import array
@@ -683,7 +684,7 @@ class KJV:
         return True
 
 
-# ---------------------------------------------------------------- quotations
+# Quotations
 # Spoken words that should match their KJV form (speech recognition and
 # preachers often modernise: "you" for "thee", "has" for "hath").
 QUOTE_EQUIV = {
@@ -711,6 +712,7 @@ QUOTE_MIN_RUN_SCORE = 8.0 # the same, when the words are exactly the verse's, un
 QUOTE_GAP = 0.4          # cost of each word skipped inside a match
 QUOTE_SHORTLIST = 400     # verses considered per search ...
 QUOTE_ALIGN = 25          # ... of which this many are aligned word by word
+QUOTE_RECENT_SECONDS = 15 # a quote may run across pauses: sentences heard this recently count too
 QUOTE_WINDOW = 40         # only the last N words heard are searched
 QUOTE_MARGIN = 1.25       # best verse must beat the runner-up by this factor
 QUOTE_CLOSE = 0.85        # ... and any tight runner-up scoring this close makes it ambiguous
@@ -896,7 +898,8 @@ class QuoteFinder:
             best, i = hit
         book, ch, v = self.rows[i]
         start = end = v
-        self.coverage = best[1] / max(1, len(self.words[i])) 
+        self.coverage = best[1] / max(1, len(self.words[i]))
+        self.span = (best[3], best[4], len(q))
         # The quote runs on into the next verse(s), or began in the previous one:
         # only words the best verse did not already account for count.
         for step, part in ((1, q[best[4] + 1:]), (-1, q[:best[3]])):
@@ -1055,10 +1058,45 @@ class Session:
         self.last = None  # last Reference put on screen
         self._story_text = []     # sentences heard since the screen last changed
         self._story_for = None    # ... i.e. since self.last became this
+        self._recent = []         # (time, sentence) heard lately, for quotes said with pauses
+        self._recent_for = None
 
-    def hear(self, text: str) -> list:
-        refs = self.kjv.find(text)
+    def with_recent(self, text: str, now: float = None) -> str:
+        """`text` after the sentences heard in the last QUOTE_RECENT_SECONDS
+        since the screen last changed, so a quote said with pauses adds up."""
+        now = time.time() if now is None else now
+        if self.last is not self._recent_for:
+            self._recent, self._recent_for = [], self.last
+        self._recent = [(t, s) for t, s in self._recent if now - t <= QUOTE_RECENT_SECONDS]
+        return " ".join([s for _, s in self._recent] + [text])
+
+    def quote_heard(self, text: str, now: float = None):
+        """The verse quoted in `text`, or else in `text` with what was heard just
+        before it."""
         quote = self.quote(text)
+        if quote is None:
+            joined = self.with_recent(text, now)
+            if joined != text:
+                quote = self.quote(joined)
+                # It must be one quote running across the pause: started before
+                # the new words and still going in them.
+                if quote is not None:
+                    first, last, heard = self.kjv._quotes.span
+                    new = heard - len(_quote_words(text))
+                    if not first < new <= last:
+                        quote = None
+        return quote
+
+    def hear(self, text: str, now: float = None) -> list:
+        now = time.time() if now is None else now
+        refs = self._hear(text, now)
+        self.with_recent("", now)  # drops the sentences if the screen changed
+        self._recent.append((now, text))
+        return refs
+
+    def _hear(self, text: str, now: float) -> list:
+        refs = self.kjv.find(text)
+        quote = self.quote_heard(text, now)
         if refs:
             # The words read aloud beat a reference that doesn't cover them: the
             # reference was probably misheard ("Genesis eleven" + Genesis 1:1 read).
