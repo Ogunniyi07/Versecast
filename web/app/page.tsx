@@ -78,7 +78,11 @@ export default function Home() {
       <MicPanel
         status={vc.status}
         statusNote={vc.statusNote}
+        loadDone={vc.loadDone}
+        slowLoad={vc.slowLoad}
         listening={vc.listening}
+        starting={vc.starting}
+        tip={vc.tip}
         hearing={vc.hearing}
         notice={vc.notice}
         onToggle={vc.toggleListening}

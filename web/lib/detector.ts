@@ -48,20 +48,25 @@ function loadScript(src: string): Promise<void> {
 
 let loading: Promise<Detector> | null = null;
 
-export function loadDetector(onStep?: (note: string) => void): Promise<Detector> {
+export function loadDetector(onStep?: (note: string, done: number) => void): Promise<Detector> {
   if (loading) return loading;
   loading = (async () => {
-    onStep?.("Loading…");
+    onStep?.("Loading…", 0.03);
     await loadScript(`${PYODIDE_URL}pyodide.js`);
+    onStep?.("Loading…", 0.15);
     const py = await window.loadPyodide!({ indexURL: PYODIDE_URL });
+    onStep?.("Loading…", 0.45);
     await py.loadPackage("sqlite3");
-    onStep?.("Loading the KJV…");
+    onStep?.("Loading the KJV…", 0.55);
     py.FS.mkdirTree(PY_DIR);
     for (const name of ["scripture_refs.py", "detect.py", "kjv.sqlite"]) {
       const res = await fetch(`/${name}`, { cache: "no-cache" });
       if (!res.ok) throw new Error(`${name}: HTTP ${res.status}`);
       py.FS.writeFile(`${PY_DIR}/${name}`, new Uint8Array(await res.arrayBuffer()));
+      onStep?.("Loading the KJV…", name === "kjv.sqlite" ? 0.8 : 0.6);
     }
+    onStep?.("Getting ready…", 0.85);
+    await new Promise((r) => setTimeout(r, 60));
     py.runPython(`import sys; sys.path.insert(0, "${PY_DIR}")\nimport detect`);
     const mod = py.pyimport("detect");
     return {

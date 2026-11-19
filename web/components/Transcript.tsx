@@ -84,8 +84,8 @@ export function Transcript({ entries, interim, listening, onClear, onShowVerse, 
                   "inline-block rounded-full px-2 py-px align-[1px] text-xs font-bold transition",
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
                   e.label === current
-                    ? "bg-brand text-white ring-2 ring-navy ring-offset-1"
-                    : "bg-brand text-white hover:bg-brand-dark",
+                    ? "bg-orange-100 text-brand-dark ring-1 ring-brand/50"
+                    : "bg-orange-50 text-brand-dark hover:bg-orange-100",
                 ].join(" ")}
               >
                 {displayLabel(e.label)}

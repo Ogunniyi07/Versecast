@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { accentLabel, DEFAULT_ACCENT, FALLBACK_ACCENT } from "./accents";
+import { VOICE_UNSUPPORTED, isIOSNonSafari, micPrompting, voiceTip } from "./browser";
 import { loadDetector, type Detector, type Ref } from "./detector";
 import { track } from "./analytics";
 import { type Entry, loadTranscript, saveTranscript, verseEntry } from "./transcript";
@@ -23,6 +24,8 @@ const ALTERNATIVES = 5; // the speech service's other guesses for a finished sen
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type SpeechRecognitionLike = any;
 
+export const LOAD_EXPECTED_MS = 7000;
+
 export type Status = "loading" | "ready" | "unsupported" | "error";
 
 export type Take = { text: string; mode: "spoken" | "typed" | "arrows" };
@@ -30,7 +33,12 @@ export type Take = { text: string; mode: "spoken" | "typed" | "arrows" };
 export function useVerseCast() {
   const [status, setStatus] = useState<Status>("loading");
   const [statusNote, setStatusNote] = useState("Loading…");
+  const [loadDone, setLoadDone] = useState(0);
   const [listening, setListening] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [tip, setTip] = useState<string | null>(null);
+  const [slowLoad, setSlowLoad] = useState(false);
+  const startTimer = useRef<ReturnType<typeof setTimeout>>();
   const [hearing, setHearing] = useState({ final: "", interim: "" });
   const [history, setHistory] = useState<Ref[]>([]);
   const [shown, setShown] = useState<number>(-1);
@@ -93,12 +101,17 @@ export function useVerseCast() {
 
   useEffect(() => {
     let cancelled = false;
-    loadDetector((note) => !cancelled && setStatusNote(note))
+    const slow = setTimeout(() => !cancelled && setSlowLoad(true), LOAD_EXPECTED_MS + 3000);
+    loadDetector((note, done) => { if (!cancelled) { setStatusNote(note); setLoadDone(done); } })
       .then((d) => {
         if (cancelled) return;
+        clearTimeout(slow);
+        setSlowLoad(false);
+        setLoadDone(1);
         detector.current = d;
         const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         setStatus(SR ? "ready" : "unsupported");
+        setTip(voiceTip());
       })
       .catch((e) => {
         console.error(e);
@@ -107,7 +120,7 @@ export function useVerseCast() {
           setStatusNote(`${e.message || e}. Check your connection and reload the page.`);
         }
       });
-    return () => { cancelled = true; };
+    return () => { cancelled = true; clearTimeout(slow); };
   }, []);
 
   // Display - Put a sentence's references into the history; the newest goes on screen.
@@ -168,7 +181,9 @@ export function useVerseCast() {
   const stop = useCallback(() => {
     listeningRef.current = false;
     setListening(false);
+    setStarting(false);
     clearTimeout(waitTimer.current);
+    clearTimeout(startTimer.current);
     try { rec.current?.stop(); } catch { /* already stopped */ }
     rec.current = null;
   }, []);
@@ -212,7 +227,9 @@ export function useVerseCast() {
         return; // onend restarts recognition with the new accent
       }
       track(`error-${e.error}`);
-      if (/not-allowed|service-not-allowed/.test(e.error)) {
+      if (e.error === "service-not-allowed" && isIOSNonSafari()) {
+        setNotice(VOICE_UNSUPPORTED);
+      } else if (/not-allowed|service-not-allowed/.test(e.error)) {
         setNotice("Microphone blocked. Allow mic access in the address bar, or type a reference below.");
       } else if (e.error === "network") {
         setNotice("Listening needs an internet connection. Check your connection and try again.");
@@ -234,6 +251,21 @@ export function useVerseCast() {
         addEntries({ t: Date.now(), kind: "stop" });
       }
     };
+    // If the speech engine hasn't started within about 3 s, it isn't going to.
+    const started = () => { clearTimeout(startTimer.current); if (rec.current === r) setStarting(false); };
+    r.onstart = started;
+    r.onaudiostart = started;
+    const check = async () => {
+      if (rec.current !== r || !listeningRef.current) return;
+      if (await micPrompting()) { startTimer.current = setTimeout(check, 3000); return; }
+      if (rec.current !== r) return;
+      track("error-no-start");
+      stop();
+      setNotice(VOICE_UNSUPPORTED);
+    };
+    clearTimeout(startTimer.current);
+    startTimer.current = setTimeout(check, 3000);
+    setStarting(true);
     rec.current = r;
     listeningRef.current = true;
     utterRefs.current = [];
@@ -340,7 +372,7 @@ export function useVerseCast() {
   }, [addEntries]);
 
   return {
-    status, statusNote, listening, hearing, history, shown, hidden, take, notice, typedMiss,
+    status, statusNote, loadDone, slowLoad, listening, starting, tip, hearing, history, shown, hidden, take, notice, typedMiss,
     toggleListening, check, pick, toggleHidden, step, accent, setAccent,
     transcript, clearTranscript, showVerse,
     current: shown >= 0 ? history[shown] : null,

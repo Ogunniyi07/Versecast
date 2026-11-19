@@ -15,6 +15,10 @@ const config: Config = {
           "0%": { boxShadow: "0 0 0 0 rgba(242,101,17,.45)" },
           "100%": { boxShadow: "0 0 0 18px rgba(242,101,17,0)" },
         },
+        wave: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
